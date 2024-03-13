@@ -1,5 +1,5 @@
 from logger import log_warn
-from standard_met_mode_map import standard_met_mode_map
+from metrics.active_travel.standard_met_mode_map import standard_met_mode_map
 
 
 def get_mets_mode_map(label_options):
