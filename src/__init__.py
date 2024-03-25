@@ -1,3 +1,4 @@
 import logger as Logger
+import metrics.metrics_summaries as MetricsSummaries
 import metrics.carbon.carbon_calculations as CarbonCalculations
 import metrics.active_travel.active_travel_calculations as ActiveTravelCalculations
