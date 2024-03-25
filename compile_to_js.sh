@@ -1,2 +1,2 @@
 #!/bin/bash
-transcrypt -n ./src/__init__.py -od ../js/__translated_src__
+transcrypt --nomin --ecom ./src/__init__.py -od ../js/__translated_src__

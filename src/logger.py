@@ -12,8 +12,6 @@ Note: Transcrypt actually does have the capability to translate the Python loggi
 # see https://www.transcrypt.org/docs/html/special_facilities.html#skipping-transcrypt-code-fragments-when-running-with-cpython-pragma-ecom-and-pragma-noecom
 
 
-# __pragma__ ('ecom')
-
 # only executed in Python environment
 import logging  # __: skip
 
