@@ -1,4 +1,5 @@
 from logger import log_debug
+from util import memoize
 
 km_per_mile = 1.609344
 kwh_per_gallon = 33.7
@@ -25,22 +26,45 @@ default_carbon_mode_map = {
     'air_long': 217.0 / 1609,
 }
 
-def get_carbon_mode_map(label_options):
+@memoize
+def get_carbon_mode_map(label_options: dict[str, any]) -> dict[str, float]:
     """
-    Gets a mapping of modes to their carbon intensity, given label options
     :param label_options: label options dict (from dynamic config 'label_options')
     :return: a dict of modes to their footprints (unit of CO2 per km)
     """
     mode_options = label_options['MODE']
-    mode_co2_entries = []
+    mode_co2_entries = {}
     range_limited_motorized = None
     for opt in mode_options:
-        if opt.get('range_limit_km'):
+        if 'range_limit_km' in opt:
             if range_limited_motorized:
                 log_debug(
                     f'Found two range limited motorized options: {range_limited_motorized} and {opt}')
             range_limited_motorized = opt
             log_debug(f'Found range limited motorized mode - {range_limited_motorized}')
-        if opt.get('kgCo2PerKm') is not None:
-            mode_co2_entries.append([opt['value'], opt['kgCo2PerKm']])
+        if 'kgCo2PerKm' in opt:
+            mode_co2_entries[opt['value']] = opt['kgCo2PerKm']
     return mode_co2_entries
+
+@memoize
+def highest_carbon_mode(label_options: dict[str, any]) -> str:
+    """
+    :param label_options: label options dict (from dynamic config 'label_options')
+    :return: mode with the highest carbon intensity
+    """
+    mode_co2_entries = get_carbon_mode_map(label_options)
+    return max(mode_co2_entries, key=mode_co2_entries.get)
+
+@memoize
+def carbon_summary_by_mode(composite_trips: list, label_options: dict[str, any]):
+    """
+    :param composite_trips: list of composite trips
+    :param label_options: label options dict (from dynamic config 'label_options')
+    :return: a dict of modes to the total carbon footprint using that mode
+    """
+    mode_to_distance_map = distance_summary_by_mode(composite_trips)
+    mode_to_carbon_map = get_carbon_mode_map(label_options)
+    carbon_summary = {}
+    for mode, distance in mode_to_distance_map.items():
+        carbon_summary[mode] = distance * mode_to_carbon_map[mode]
+    return carbon_summary
