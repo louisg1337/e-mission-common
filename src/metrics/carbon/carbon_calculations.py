@@ -1,5 +1,5 @@
 from logger import log_debug
-from util import memoize
+# from util import memoize
 
 km_per_mile = 1.609344
 kwh_per_gallon = 33.7
@@ -26,7 +26,7 @@ default_carbon_mode_map = {
     'air_long': 217.0 / 1609,
 }
 
-@memoize
+# @memoize
 def get_carbon_mode_map(label_options: dict[str, any]) -> dict[str, float]:
     """
     :param label_options: label options dict (from dynamic config 'label_options')
@@ -46,7 +46,7 @@ def get_carbon_mode_map(label_options: dict[str, any]) -> dict[str, float]:
             mode_co2_entries[opt['value']] = opt['kgCo2PerKm']
     return mode_co2_entries
 
-@memoize
+# @memoize
 def highest_carbon_mode(label_options: dict[str, any]) -> str:
     """
     :param label_options: label options dict (from dynamic config 'label_options')
@@ -55,7 +55,7 @@ def highest_carbon_mode(label_options: dict[str, any]) -> str:
     mode_co2_entries = get_carbon_mode_map(label_options)
     return max(mode_co2_entries, key=mode_co2_entries.get)
 
-@memoize
+# @memoize
 def carbon_summary_by_mode(composite_trips: list, label_options: dict[str, any]):
     """
     :param composite_trips: list of composite trips

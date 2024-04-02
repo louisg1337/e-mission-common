@@ -1,8 +1,8 @@
-from util import memoize
+# from util import memoize
 import logger as Logger
 
 
-@memoize
+# @memoize
 def labeled_mode_for_trip(composite_trip: dict, trip_labels_map: dict[str, any]) -> str:
     """
     :param composite_trip: composite trip
@@ -20,7 +20,7 @@ def labeled_mode_for_trip(composite_trip: dict, trip_labels_map: dict[str, any])
     return UNLABELED
 
 
-@memoize
+# @memoize
 def generate_summaries(metrics: list[str], composite_trips: list, trip_labels_map: dict[str, any]):
     return {metric: get_summary_for_metric(metric, composite_trips, trip_labels_map) for metric in metrics}
 

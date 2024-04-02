@@ -1,6 +1,6 @@
 {
   "name": "e-mission-common",
-  "version": "0.1.1",
+  "version": "0.1.3",
   "description": "A common library to share code between projects in the e-mission-platform. Written in Python and exposed as both Python and JavaScript.",
   "main": "index.js",
   "repository": {
