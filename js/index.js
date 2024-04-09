@@ -9,3 +9,4 @@ export const dictToObj = (pythonDict) =>
 
 export const CarbonCalculations = TranslatedCode.CarbonCalculations;
 export const MetricsSummaries = TranslatedCode.MetricsSummaries;
+export const SurveysSummary = TranslatedCode.SurveysSummary
