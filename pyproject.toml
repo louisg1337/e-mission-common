@@ -18,3 +18,6 @@ license = {text = "BSD-3-Clause"}
 Homepage = "https://github.com/JGreenlee/e-mission-common#readme"
 Repository = "https://github.com/JGreenlee/e-mission-common.git"
 Issues = "https://github.com/e-mission/e-mission-docs/issues"
+
+[tool.setuptools]
+packages = ["emcommon"]
