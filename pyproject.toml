@@ -1,3 +1,7 @@
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
 [project]
 name = "e-mission-common"
 authors = [
@@ -19,5 +23,5 @@ Homepage = "https://github.com/JGreenlee/e-mission-common#readme"
 Repository = "https://github.com/JGreenlee/e-mission-common.git"
 Issues = "https://github.com/e-mission/e-mission-docs/issues"
 
-[tool.setuptools]
-packages = ["emcommon"]
+[tool.setuptools.packages.find]
+include = ["emcommon*"]
