@@ -1,4 +1,4 @@
-// Transcrypt'ed from Python, 2024-04-11 11:59:22
+// Transcrypt'ed from Python, 2024-04-11 12:14:12
 import {AssertionError, AttributeError, BaseException, DeprecationWarning, Exception, IndexError, IterableError, KeyError, NotImplementedError, RuntimeWarning, StopIteration, UserWarning, ValueError, Warning, __JsIterator__, __PyIterator__, __Terminal__, __add__, __and__, __call__, __class__, __envir__, __eq__, __floordiv__, __ge__, __get__, __getcm__, __getitem__, __getslice__, __getsm__, __gt__, __i__, __iadd__, __iand__, __idiv__, __ijsmod__, __ilshift__, __imatmul__, __imod__, __imul__, __in__, __init__, __ior__, __ipow__, __irshift__, __isub__, __ixor__, __jsUsePyNext__, __jsmod__, __k__, __kwargtrans__, __le__, __lshift__, __lt__, __matmul__, __mergefields__, __mergekwargtrans__, __mod__, __mul__, __ne__, __neg__, __nest__, __or__, __pow__, __pragma__, __pyUseJsNext__, __rshift__, __setitem__, __setproperty__, __setslice__, __sort__, __specialattrib__, __sub__, __super__, __t__, __terminal__, __truediv__, __withblock__, __xor__, abs, all, any, assert, bool, bytearray, bytes, callable, chr, copy, deepcopy, delattr, dict, dir, divmod, enumerate, filter, float, getattr, hasattr, input, int, isinstance, issubclass, len, list, map, max, min, object, ord, pow, print, property, py_TypeError, py_iter, py_metatype, py_next, py_reversed, py_typeof, range, repr, round, set, setattr, sorted, str, sum, tuple, zip} from './org.transcrypt.__runtime__.js';
 import {survey_prompted_for_trip} from './survey.conditional_surveys.js';
 import * as Logger from './logger.js';
@@ -37,6 +37,38 @@ export var get_surveys_summary = function (composite_trips, trip_labels_map, app
 		}
 	}
 	return surveys_summary;
+};
+export var get_response_rate_rankings = function (composite_trips, trip_labels_map, app_config) {
+	var user_trips = dict ({});
+	for (var trip of composite_trips) {
+		var user_id = trip ['user_id'];
+		if (!__in__ (user_id, user_trips)) {
+			user_trips [user_id] = [];
+		}
+		user_trips [user_id].append (trip);
+	}
+	var response_rates = dict ({});
+	for (var [user_id, trips] of user_trips.py_items ()) {
+		var summary = get_surveys_summary (trips, trip_labels_map, app_config);
+		var answered = sum ((function () {
+			var __accu0__ = [];
+			for (var s of summary.py_values ()) {
+				__accu0__.append (s ['answered']);
+			}
+			return __accu0__;
+		}) ());
+		var unanswered = sum ((function () {
+			var __accu0__ = [];
+			for (var s of summary.py_values ()) {
+				__accu0__.append (s ['unanswered']);
+			}
+			return __accu0__;
+		}) ());
+		response_rates [user_id] = answered / (answered + unanswered);
+	}
+	return sorted (response_rates.py_items (), __kwargtrans__ ({key: (function __lambda__ (x) {
+		return x [1];
+	}), reverse: true}));
 };
 
 //# sourceMappingURL=metrics.surveys.surveys_summary.map

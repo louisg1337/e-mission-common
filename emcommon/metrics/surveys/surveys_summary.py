@@ -44,3 +44,48 @@ def get_surveys_summary(composite_trips: list, trip_labels_map: dict[str, any], 
         else:
             surveys_summary[prompted_survey]['unanswered'] += 1
     return surveys_summary
+
+
+def get_response_rate_rankings(composite_trips: list, trip_labels_map: dict[str, any], app_config: dict) -> dict:
+    """
+    :param composite_trips: a list of composite trips from multiple users
+    :return: a dict of user_id to response rate, sorted by highest response rate
+    """
+    # bin trips by user_id
+    user_trips = {}
+    for trip in composite_trips:
+        user_id = trip['user_id']
+        if user_id not in user_trips:
+            user_trips[user_id] = []
+        user_trips[user_id].append(trip)
+    # get response rates for each user
+    response_rates = {}
+    for user_id, trips in user_trips.items():
+        summary = get_surveys_summary(trips, trip_labels_map, app_config)
+        answered = sum([s['answered'] for s in summary.values()])
+        unanswered = sum([s['unanswered'] for s in summary.values()])
+        response_rates[user_id] = answered / (answered + unanswered)
+    # sort by highest response rate and return
+    return sorted(response_rates.items(), key=lambda x: x[1], reverse=True)
+
+
+# def get_median_response_rates(composite_trips: list, trip_labels_map: dict[str, any], app_config: dict) -> dict:
+#     # bin trips by user_id
+#     user_vals = {}
+#     for trip in composite_trips:
+#         user_id = trip['user_id']
+#         if user_id not in user_vals:
+#             user_vals[user_id] = []
+#         user_vals[user_id].append(trip)
+#     # get response rates for each user
+#     response_rates = {}
+#     for user_id, trips in user_vals.items():
+#         summary = get_surveys_summary(trips, trip_labels_map, app_config)
+#         for survey_name, s in summary.items():
+#             response_rates[survey_name] = response_rates[survey_name] or []
+#             response_rates[survey_name].append(s['answered'] / (s['answered'] + s['unanswered']))
+
+#     # get the median
+#     response_rates.sort()
+#     median = response_rates[len(response_rates) // 2]
+#     return median
