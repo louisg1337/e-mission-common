@@ -1,4 +1,4 @@
-import * as TranslatedCode from './__translated_src__/__init__.js';
+import * as TranslatedCode from './emcommon_translated_js/__init__.js';
 
 /**
  * @description Converts a Python dict object to a plain JS object
