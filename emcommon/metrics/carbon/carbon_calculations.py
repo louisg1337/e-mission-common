@@ -1,4 +1,4 @@
-from logger import log_debug
+import logger as Logger
 # from util import memoize
 
 km_per_mile = 1.609344
@@ -38,10 +38,9 @@ def get_carbon_mode_map(label_options: dict[str, any]) -> dict[str, float]:
     for opt in mode_options:
         if 'range_limit_km' in opt:
             if range_limited_motorized:
-                log_debug(
-                    f'Found two range limited motorized options: {range_limited_motorized} and {opt}')
+                Logger.log_debug(f'Found two range limited motorized options: {range_limited_motorized} and {opt}')
             range_limited_motorized = opt
-            log_debug(f'Found range limited motorized mode - {range_limited_motorized}')
+            Logger.log_debug(f'Found range limited motorized mode - {range_limited_motorized}')
         if 'kgCo2PerKm' in opt:
             mode_co2_entries[opt['value']] = opt['kgCo2PerKm']
     return mode_co2_entries

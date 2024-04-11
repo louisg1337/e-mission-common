@@ -1,4 +1,4 @@
-from logger import log_warn
+import logger as Logger
 from metrics.active_travel.standard_met_mode_map import standard_met_mode_map
 
 
@@ -24,6 +24,5 @@ def get_mets_mode_map(label_options):
                     ]
                 mode_met_entries.append([opt['value'], curr_met])
             else:
-                log_warn(
-                    f'Did not find either met_equivalent or met for {opt["value"]} ignoring entry')
+                Logger.log_warn(f'Did not find either met_equivalent or met for {opt["value"]} ignoring entry')
     return mode_met_entries
