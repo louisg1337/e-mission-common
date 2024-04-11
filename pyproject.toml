@@ -24,4 +24,4 @@ Repository = "https://github.com/JGreenlee/e-mission-common.git"
 Issues = "https://github.com/e-mission/e-mission-docs/issues"
 
 [tool.setuptools.packages.find]
-include = ["emcommon*"]
+exclude = ["emcommon_translated_js*"]
