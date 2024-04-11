@@ -1,0 +1,20 @@
+[project]
+name = "e-mission-common"
+authors = [
+    {name = "Jack Greenlee", email = "jack.greenlee@nrel.gov"},
+    {name = "K Shankari", email = "k.shankari@nrel.gov"},
+]
+description = "A common library to share code between projects in the e-mission-platform. Written in Python and exposed as both Python and JavaScript."
+version = "0.2.0"
+readme = "README.md"
+classifiers = [
+  "License :: OSI Approved :: BSD License",
+  "Programming Language :: Python :: 3.9",
+  "Programming Language :: JavaScript",
+]
+license = "BSD-3-Clause"
+
+[project.urls]
+Homepage = "https://github.com/JGreenlee/e-mission-common#readme"
+Repository = "https://github.com/JGreenlee/e-mission-common.git"
+Issues = "https://github.com/e-mission/e-mission-docs/issues"
