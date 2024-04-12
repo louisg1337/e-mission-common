@@ -63,7 +63,7 @@ def survey_prompted_for_trip(composite_trip: dict, app_config: dict) -> str | No
     try:
         potential_surveys = app_config['survey_info']['buttons']['trip-label']
     except:
-        Logger.log_warning('No surveys in app config')
+        Logger.log_warn('No surveys in app config')
         return None
     # if potential surveys is not a list, just return it
     if not isinstance(potential_surveys, list):
