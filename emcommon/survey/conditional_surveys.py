@@ -24,8 +24,12 @@ def scoped_eval(script: str, scope: dict) -> any:
     Evaluate an expression in a restricted scope (implementations for both JS and Python)
     :example scoped_eval('foo + 1', { foo: 1 }) -> 2
     """
-    # JS implementation        
-    # __pragma__('js', '{}', 'return Function(...Object.keys(scope), `return ${script}`)(...Object.values(scope));')
+    # JS implementation (using literal JS code)
+    '''?
+    __pragma__('js', '{}', """
+        return Function(...Object.keys(scope), `return ${script}`)(...Object.values(scope));
+    """)
+    ?'''
    
     # Python implementation
     return eval(script, scope) # __: skip
