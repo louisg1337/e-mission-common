@@ -7,12 +7,6 @@ This repository uses the [Transcrypt](https://www.transcrypt.org/) library to co
 ## Setup
 
 ```
-git clone https://github.com/e-mission-common.git
-```
-```
-cd e-mission-common
-```
-```
 pip install transcrypt
 ```
 
