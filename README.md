@@ -7,5 +7,5 @@ This repository uses the [Transcrypt](https://www.transcrypt.org/) library to co
 ## To contribute
 
 1. Make your changes to Python code under the `emcommon` directory.
-2. Run `compile_to_js.sh` to build the JavaScript. This will produce output JS files in the `emcommon_translated_js` directory.
-3. Commit your changes from both the `emcommon` and `emcommon_translated_js` directories.
+2. Run `. ./bin/compile_to_js.sh` to build the JavaScript. This will produce output JS files in the `emcommon_js` directory.
+3. Commit your changes from both the `emcommon` and `emcommon_js` directories.

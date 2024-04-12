@@ -2,7 +2,7 @@
   "name": "e-mission-common",
   "version": "0.2.0",
   "description": "A common library to share code between projects in the e-mission-platform. Written in Python and exposed as both Python and JavaScript.",
-  "main": "index.js",
+  "main": "./emcommon_js/index.js",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/JGreenlee/e-mission-common.git"
