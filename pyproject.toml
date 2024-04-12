@@ -1,10 +1,6 @@
-[build-system]
-requires = ["setuptools"]
-build-backend = "setuptools.build_meta"
-
 [project]
 name = "e-mission-common"
-version = "0.3.0"
+version = "0.3.1"
 authors = [
     {name = "Jack Greenlee", email = "jack.greenlee@nrel.gov"},
     {name = "K Shankari", email = "k.shankari@nrel.gov"},
@@ -22,6 +18,10 @@ license = {text = "BSD-3-Clause"}
 Homepage = "https://github.com/JGreenlee/e-mission-common#readme"
 Repository = "https://github.com/JGreenlee/e-mission-common.git"
 Issues = "https://github.com/e-mission/e-mission-docs/issues"
+
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
 
 [tool.setuptools.packages.find]
 exclude = ["emcommon_js*"]
