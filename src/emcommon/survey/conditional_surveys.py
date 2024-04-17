@@ -1,3 +1,4 @@
+from __future__ import annotations # __: skip
 import emcommon.logger as Logger
 import re # __: skip
 

@@ -1,3 +1,4 @@
+from __future__ import annotations # __: skip
 # from util import memoize
 import emcommon.logger as Logger
 

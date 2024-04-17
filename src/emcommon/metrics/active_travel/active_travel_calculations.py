@@ -1,3 +1,4 @@
+from __future__ import annotations # __: skip
 import emcommon.logger as Logger
 from emcommon.metrics.active_travel.standard_met_mode_map import standard_met_mode_map
 
