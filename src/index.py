@@ -1,11 +1,11 @@
 # This is the entry point for Transcrypt, specifying the Python code that will be transpiled to JavaScript
 
-import logger as Logger
-import metrics.metrics_summaries as metrics_summaries
-import metrics.surveys.surveys_summary as surveys_summary
-import metrics.carbon.carbon_calculations as carbon_calculations
-import metrics.active_travel.active_travel_calculations as active_travel_calculations
-import survey.conditional_surveys as conditional_surveys
+import emcommon.logger as Logger
+import emcommon.metrics.metrics_summaries as metrics_summaries
+import emcommon.metrics.surveys.surveys_summary as surveys_summary
+import emcommon.metrics.carbon.carbon_calculations as carbon_calculations
+import emcommon.metrics.active_travel.active_travel_calculations as active_travel_calculations
+import emcommon.survey.conditional_surveys as conditional_surveys
 
 def dict_to_js_obj(py_dict):
     """

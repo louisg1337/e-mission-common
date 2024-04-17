@@ -1,4 +1,4 @@
-import logger as Logger
+import emcommon.logger as Logger
 import re # __: skip
 
 def point_is_within_bounds(pt: list, bounds: list[list]) -> bool:

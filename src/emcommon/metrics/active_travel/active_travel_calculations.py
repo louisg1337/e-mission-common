@@ -1,5 +1,5 @@
-import logger as Logger
-from metrics.active_travel.standard_met_mode_map import standard_met_mode_map
+import emcommon.logger as Logger
+from emcommon.metrics.active_travel.standard_met_mode_map import standard_met_mode_map
 
 
 def get_mets_mode_map(label_options):

@@ -1,5 +1,5 @@
-import logger as Logger
-from survey.conditional_surveys import survey_prompted_for_trip
+import emcommon.logger as Logger
+from emcommon.survey.conditional_surveys import survey_prompted_for_trip
 
 def survey_answered_for_trip(composite_trip: dict, trip_labels_map: dict[str, any]) -> str | None:
     """

@@ -1,4 +1,4 @@
-import logger as Logger
+import emcommon.logger as Logger
 # from util import memoize
 
 km_per_mile = 1.609344

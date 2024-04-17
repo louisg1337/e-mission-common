@@ -1,5 +1,5 @@
 # from util import memoize
-import logger as Logger
+import emcommon.logger as Logger
 
 
 # @memoize
