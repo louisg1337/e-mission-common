@@ -6,6 +6,7 @@ import emcommon.metrics.surveys.surveys_summary as surveys_summary
 import emcommon.metrics.carbon.carbon_calculations as carbon_calculations
 import emcommon.metrics.active_travel.active_travel_calculations as active_travel_calculations
 import emcommon.survey.conditional_surveys as conditional_surveys
+import emcommon.bluetooth.ble_matching as ble_matching
 
 def dict_to_js_obj(py_dict):
     """
