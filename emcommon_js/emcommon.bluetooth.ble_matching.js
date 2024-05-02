@@ -1,32 +1,27 @@
-// Transcrypt'ed from Python, 2024-04-30 11:32:55
+// Transcrypt'ed from Python, 2024-05-02 16:23:14
 import {AssertionError, AttributeError, BaseException, DeprecationWarning, Exception, IndexError, IterableError, KeyError, NotImplementedError, RuntimeWarning, StopIteration, UserWarning, ValueError, Warning, __JsIterator__, __PyIterator__, __Terminal__, __add__, __and__, __call__, __class__, __envir__, __eq__, __floordiv__, __ge__, __get__, __getcm__, __getitem__, __getslice__, __getsm__, __gt__, __i__, __iadd__, __iand__, __idiv__, __ijsmod__, __ilshift__, __imatmul__, __imod__, __imul__, __in__, __init__, __ior__, __ipow__, __irshift__, __isub__, __ixor__, __jsUsePyNext__, __jsmod__, __k__, __kwargtrans__, __le__, __lshift__, __lt__, __matmul__, __mergefields__, __mergekwargtrans__, __mod__, __mul__, __ne__, __neg__, __nest__, __or__, __pow__, __pragma__, __pyUseJsNext__, __rshift__, __setitem__, __setproperty__, __setslice__, __sort__, __specialattrib__, __sub__, __super__, __t__, __terminal__, __truediv__, __withblock__, __xor__, abs, all, any, assert, bool, bytearray, bytes, callable, chr, copy, deepcopy, delattr, dict, dir, divmod, enumerate, filter, float, getattr, hasattr, input, int, isinstance, issubclass, len, list, map, max, min, object, ord, pow, print, property, py_TypeError, py_iter, py_metatype, py_next, py_reversed, py_typeof, range, repr, round, set, setattr, sorted, str, sum, tuple, zip} from './org.transcrypt.__runtime__.js';
 import * as Logger from './emcommon.logger.js';
 export {Logger};
 var __name__ = 'emcommon.bluetooth.ble_matching';
 export var get_ble_sensed_vehicle_for_section = function (ble_entries, start_ts, end_ts, app_config) {
+	Logger.log_debug (__mod__ ('getting BLE sensed vehicle for section from %d to %d', tuple ([start_ts, end_ts])));
 	if (!__in__ ('vehicle_identities', app_config)) {
 		return null;
 	}
-	var ble_ranging_entries_during_section = (function () {
-		var __accu0__ = [];
-		for (var entry of ble_entries) {
-			if (entry.data.ts >= start_ts && entry.data.ts <= end_ts && (entry.data.eventType == 'RANGE_UPDATE' || entry.data.eventType == 2)) {
-				__accu0__.append (entry);
-			}
-		}
-		return __accu0__;
-	}) ();
+	var ble_ranging_entries_during_section = get_ble_range_updates_for_section (ble_entries, start_ts, end_ts);
+	Logger.log_debug (__mod__ ('After filtering, %d BLE ranging entries during the section', len (ble_ranging_entries_during_section)));
 	if (len (ble_ranging_entries_during_section) == 0) {
 		return null;
 	}
 	var ble_beacon_counts = dict ({});
 	for (var entry of ble_ranging_entries_during_section) {
-		var major_minor = ('{:02x}'.format (entry.data.major) + ':') + '{:02x}'.format (entry.data.minor);
+		var major_minor = ('{:02x}'.format (entry ['data'] ['major']) + ':') + '{:02x}'.format (entry ['data'] ['minor']);
 		if (!__in__ (major_minor, ble_beacon_counts)) {
 			ble_beacon_counts [major_minor] = 0;
 		}
 		ble_beacon_counts [major_minor]++;
 	}
+	Logger.log_debug (__mod__ ('after counting, ble_beacon_counts = %s', ble_beacon_counts));
 	var ble_beacon_major_minor = max (ble_beacon_counts, __kwargtrans__ ({key: ble_beacon_counts.py_get}));
 	return get_vehicle_with_ble_beacon (ble_beacon_major_minor, app_config);
 };
@@ -44,7 +39,7 @@ export var get_ble_range_updates_for_section = function (ble_entries, start_ts, 
 	return (function () {
 		var __accu0__ = [];
 		for (var entry of ble_entries) {
-			if (entry.data.ts >= start_ts && entry.data.ts <= end_ts && (entry.data.eventType == 'RANGE_UPDATE' || entry.data.eventType == 2)) {
+			if (entry ['data'] ['ts'] >= start_ts && entry ['data'] ['ts'] <= end_ts && (entry ['data'] ['eventType'] == 'RANGE_UPDATE' || entry ['data'] ['eventType'] == 2)) {
 				__accu0__.append (entry);
 			}
 		}
@@ -52,11 +47,13 @@ export var get_ble_range_updates_for_section = function (ble_entries, start_ts, 
 	}) ();
 };
 export var get_vehicle_with_ble_beacon = function (major_minor, app_config) {
-	for (var vehicle of app_config.vehicle_identities) {
-		if (vehicle.bluetooth_major_minor == major_minor) {
+	for (var vehicle of app_config ['vehicle_identities']) {
+		if (__in__ (major_minor, vehicle ['bluetooth_major_minor'])) {
+			Logger.log_debug (__mod__ ('found vehicle %s with BLE beacon %s', tuple ([vehicle ['text'], major_minor])));
 			return vehicle;
 		}
 	}
+	Logger.log_debug (__mod__ ('no vehicle found for BLE beacon %s', major_minor));
 	return null;
 };
 
