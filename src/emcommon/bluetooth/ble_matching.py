@@ -8,17 +8,7 @@ def get_ble_sensed_vehicle_for_section(ble_entries, start_ts, end_ts, app_config
     """
     if 'vehicle_identities' not in app_config:
         return None
-    ble_ranging_entries_during_section = [
-        entry for entry in ble_entries
-        if entry.data.ts >= start_ts
-        and entry.data.ts <= end_ts
-        and (
-            entry.data.eventType == 'RANGE_UPDATE'
-            # e-mission-server uses an enum (BLEEventTypes.RANGE_UPDATE)
-            # so once processed, 'RANGE_UPDATE' becomes 2
-            or entry.data.eventType == 2
-        )
-    ]
+    ble_ranging_entries_during_section = get_ble_range_updates_for_section(ble_entries, start_ts, end_ts)
     if len(ble_ranging_entries_during_section) == 0:
         return None
 
