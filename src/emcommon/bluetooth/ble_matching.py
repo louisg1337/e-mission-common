@@ -73,3 +73,12 @@ def get_vehicle_with_ble_beacon(major_minor, app_config):
             return vehicle
     Logger.log_debug('no vehicle found for BLE beacon %s' % major_minor)
     return None
+
+def primary_ble_sensed_mode_for_trip(trip: dict) -> str:
+    """
+    Returns the primary BLE sensed mode for the trip (the mode with the greatest distance).
+    """
+    if 'ble_sensed_summary' not in trip or 'distance' not in trip['ble_sensed_summary']:
+        return None
+    # return the key of the mode with the greatest distance
+    return max(trip['ble_sensed_summary']['distance'], key=trip['ble_sensed_summary']['distance'].get)
