@@ -80,5 +80,6 @@ def primary_ble_sensed_mode_for_trip(trip: dict) -> str:
     """
     if 'ble_sensed_summary' not in trip or 'distance' not in trip['ble_sensed_summary']:
         return None
+    dists = trip['ble_sensed_summary']['distance']
     # return the key of the mode with the greatest distance
-    return max(trip['ble_sensed_summary']['distance'], key=trip['ble_sensed_summary']['distance'].get)
+    return max(dists, key=lambda mode: dists[mode])
