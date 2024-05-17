@@ -1,7 +1,7 @@
 from __future__ import annotations # __: skip
 # from util import memoize
 import emcommon.logger as Logger
-
+import emcommon.util as util
 
 # @memoize
 def label_for_trip(composite_trip: dict, label_key: str, trip_labels_map: dict[str, any] = None) -> str:
@@ -41,7 +41,8 @@ def labeled_purpose_for_trip(composite_trip: dict, trip_labels_map: dict[str, an
 
 
 # @memoize
-def generate_summaries(metrics: list[str], composite_trips: list, trip_labels_map: dict[str, any]):
+def generate_summaries(metrics: list[str], composite_trips: list, trip_labels_map: dict[str, any] = None):
+    composite_trips = [util.flatten_db_entry(trip) for trip in composite_trips if 'data' in trip]
     return {metric: get_summary_for_metric(metric, composite_trips, trip_labels_map) for metric in metrics}
 
 
