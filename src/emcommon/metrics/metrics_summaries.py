@@ -2,96 +2,146 @@ from __future__ import annotations # __: skip
 # from util import memoize
 import emcommon.logger as Logger
 import emcommon.util as util
+import emcommon.bluetooth.ble_matching as emcble
+import emcommon.survey.conditional_surveys as emcsc
+
+app_config = None
+labels_map = None
 
 # @memoize
-def label_for_trip(composite_trip: dict, label_key: str, trip_labels_map: dict[str, any] = None) -> str:
+def label_for_trip(composite_trip: dict, label_key: str) -> str:
     """
     :param composite_trip: composite trip
     :param label_key: which type of label to get ('mode', 'purpose', or 'replaced_mode')
-    :param trip_labels_map: trip labels map
-    :return: the label for the trip, derived from the trip's user_input if available, or the trip_labels_map if available, or 'unlabeled' otherwise
+    :return: the label for the trip, derived from the trip's user_input if available, or the labels_map if available, or 'unlabeled' otherwise
     """
+    global labels_map
     label_key = label_key.upper()
     label_key_confirm = label_key.lower() + '_confirm'
-    UNLABELED = 'unlabeled'
-    if not composite_trip:
-        return UNLABELED
+    Logger.log_debug('called label_for_trip with label_key %s for trip %s' % (label_key, composite_trip))
     if 'user_input' in composite_trip and label_key_confirm in composite_trip['user_input']:
         return composite_trip['user_input'][label_key_confirm]
-    if trip_labels_map and composite_trip['_id']['$oid'] in trip_labels_map:
-        if label_key_upper in trip_labels_map[composite_trip['_id']['$oid']]:
-            return trip_labels_map[composite_trip['_id']['$oid']][label_key_upper]['data']['label']
-    return UNLABELED
-
-def labeled_purpose_for_trip(composite_trip: dict, trip_labels_map: dict[str, any] = None) -> str:
-    """
-    :param composite_trip: composite trip
-    :param trip_labels_map: trip labels map
-    :return: labeled purpose for the trip, derived from the trip's user_input if available, or the trip_labels_map if available, or 'unlabeled' otherwise
-    """
-    UNLABELED = 'unlabeled'
-    if not composite_trip:
-        return UNLABELED
-    if 'user_input' in composite_trip and 'purpose_confirm' in composite_trip['user_input']:
-        return composite_trip['user_input']['purpose_confirm']
-    if trip_labels_map and composite_trip['_id']['$oid'] in trip_labels_map:
-        if 'PURPOSE' in trip_labels_map[composite_trip['_id']['$oid']]:
-            return trip_labels_map[composite_trip['_id']['$oid']]['PURPOSE']['data']['label']
-    return UNLABELED
-
-
-# @memoize
-def generate_summaries(metrics: list[str], composite_trips: list, trip_labels_map: dict[str, any] = None):
-    composite_trips = [util.flatten_db_entry(trip) for trip in composite_trips if 'data' in trip]
-    return {metric: get_summary_for_metric(metric, composite_trips, trip_labels_map) for metric in metrics}
-
-
-def value_of_metric_for_trip(metric: str, trip: dict):
-    if metric == 'distance':
-        return trip['distance']
-    elif metric == 'count':
-        return 1
-    elif metric == 'duration':
-        return trip['duration']
+    if labels_map and composite_trip['_id']['$oid'] in labels_map \
+        and label_key in labels_map[composite_trip['_id']['$oid']]:
+            return labels_map[composite_trip['_id']['$oid']][label_key]['data']['label']
     return None
 
 
-def get_summary_for_metric(metric: str, composite_trips: list, trip_labels_map: dict[str, any] = None):
+def survey_answered_for_trip(composite_trip: dict) -> str | None:
+    """
+    :param composite_trip: composite trip
+    :return: the name of the survey that was answered for the trip, or None if no survey was answered
+    """
+    global labels_map
+    Logger.log_debug('called survey_answered_for_trip for trip %s' % composite_trip)
+    if 'user_input' in composite_trip and 'trip_user_input' in composite_trip['user_input']:
+        return composite_trip['user_input']['trip_user_input']['data']['name']
+    if labels_map \
+      and composite_trip['_id']['$oid'] in labels_map \
+      and 'SURVEY' in labels_map[composite_trip['_id']['$oid']] \
+      and 'data' in labels_map[composite_trip['_id']['$oid']]['SURVEY']:
+        return labels_map[composite_trip['_id']['$oid']]['SURVEY']['data']['name']
+    return None
+
+
+# @memoize
+def generate_summaries(metric_list: dict[str, list[str]], composite_trips: list, _app_config, _labels_map: dict[str, any] = None):
+    global app_config, labels_map
+    app_config = _app_config
+    labels_map = _labels_map
+    composite_trips = [util.flatten_db_entry(trip) for trip in composite_trips if 'data' in trip]
+    metric_list = dict(metric_list)
+    return {metric[0]: get_summary_for_metric(metric, composite_trips) for metric in metric_list.items()}
+
+
+def value_of_metric_for_trip(metric_name: str, grouping_field: str, trip: dict):
+    global app_config
+    if metric_name == 'distance':
+        return trip['distance']
+    elif metric_name == 'count':
+        return 1
+    elif metric_name == 'duration':
+        return trip['duration']
+    elif metric_name == 'response_count':
+        if grouping_field.endswith('_confirm'):
+            return 'responded' if label_for_trip(trip, grouping_field[:-8]) else 'not_responded'
+        elif grouping_field == 'survey':
+            prompted_survey = emcsc.survey_prompted_for_trip(trip, app_config)
+            answered_survey = survey_answered_for_trip(trip)
+            return 'responded' if answered_survey == prompted_survey else 'not_responded'
+    return None
+
+
+def get_summary_for_metric(metric: tuple[str, list[str]], composite_trips: list):
+    """
+    :param metric: tuple of metric name and list of grouping fields
+    :param composite_trips: list of composite trips
+    :return: a list of dicts, each representing a summary of the metric on one day
+    e.g. get_summary_for_metric(('distance', ['mode_confirm', 'purpose_confirm']), composite_trips)
+      -> [ { 'date': '2024-05-20', 'mode_confirm_bike': 1000, 'mode_confirm_walk': 500, 'purpose_confirm_home': 1500 } ]
+    """
     days_of_metrics_data = {}
     for trip in composite_trips:
+        # for now, we're only grouping by day. First part of ISO date is YYYY-MM-DD
         date = trip['start_fmt_time'].split('T')[0]
         if date not in days_of_metrics_data:
             days_of_metrics_data[date] = []
         days_of_metrics_data[date].append(trip)
-
+    # days_summaries e.g. [ { 'date': '2024-05-20', 'mode_confirm_bike': 1000, 'purpose_confirm_home': 1500 } ]
     days_summaries = []
     for date, trips in days_of_metrics_data.items():
         summary_for_day = {
             'date': date,
         }
-        summary_for_day.update(metric_summary_by_mode(
-            metric, trips, trip_labels_map))
+        summary_for_day.update(metric_summary_for_trips(metric, trips))
         days_summaries.append(summary_for_day)
     return days_summaries
 
-def metric_summary_by_mode(metric: str, composite_trips: list, trip_labels_map = None):
-    """
-    :param composite_trips: list of composite trips
-    :return: a dict of mode keys to the metric total for that mode
-    """
-    grouping_fields = {
-        'mode_confirm': lambda trip: label_for_trip(trip, 'mode', trip_labels_map),
-        'purpose_confirm': lambda trip: label_for_trip(trip, 'purpose', trip_labels_map),
-        'replaced_mode_confirm': lambda trip: label_for_trip(trip, 'replaced_mode', trip_labels_map),
-    }
+grouping_field_fns = {
+    'mode_confirm': lambda trip: label_for_trip(trip, 'mode') or 'UNLABELED',
+    'purpose_confirm': lambda trip: label_for_trip(trip, 'purpose') or 'UNLABELED',
+    'replaced_mode_confirm': lambda trip: label_for_trip(trip, 'replaced_mode') or 'UNLABELED',
+    'survey': lambda trip: emcsc.survey_prompted_for_trip(trip, app_config),
+    # 'primary_inferred_mode', maybe add later
+    'primary_ble_sensed_mode': lambda trip: emcble.primary_ble_sensed_mode_for_trip(trip) or 'UNKNOWN',
+}
 
-    mode_to_metric_map = {}
+def metric_summary_for_trips(metric: tuple[str, list[str]], composite_trips: list):
+    """
+    :param metric: tuple of metric name and list of grouping fields
+    :param composite_trips: list of composite trips
+    :return: a dict of { groupingfield_value : metric_total } for the given metric and trips
+    e.g. metric_summary_for_trips(('distance', ['mode_confirm', 'purpose_confirm']), composite_trips)
+      -> { 'mode_confirm_bike': 1000, 'mode_confirm_walk': 500, 'purpose_confirm_home': 1500 }
+    e.g. metric_summary_for_trips(('response_count', ['mode_confirm', 'purpose_confirm']), composite_trips)
+      -> { 'mode_confirm_bike': { 'responded': 10, 'not_responded': 5 }, 'mode_confirm_walk': { 'responded': 5, 'not_responded': 10 } }
+    """
+    global app_config
+    groups = {}
     if not composite_trips:
-        return mode_to_metric_map
+        return groups
     for trip in composite_trips:
-        for grouping_field, field_for_trip_fn in grouping_fields.items():
-            grouping_key = grouping_field + '_' + field_for_trip_fn(trip)
-            if grouping_key not in mode_to_metric_map:
-                mode_to_metric_map[grouping_key] = 0
-            mode_to_metric_map[grouping_key] += value_of_metric_for_trip(metric, trip)
-    return mode_to_metric_map
+        if 'primary_ble_sensed_mode' not in trip:
+            trip['primary_ble_sensed_mode'] = emcble.primary_ble_sensed_mode_for_trip(trip) or 'UNKNOWN'
+        for grouping_field in metric[1]:
+            if grouping_field not in grouping_field_fns:
+                continue
+            field_value_for_trip = grouping_field_fns[grouping_field](trip)
+            if field_value_for_trip is None:
+                continue
+            # grouping_key e.g. 'mode_confirm_bike'
+            grouping_key = grouping_field + '_' + field_value_for_trip
+            val = value_of_metric_for_trip(metric[0], grouping_field, trip)
+            # if it's a number, we're summing and adding to the total (used for distance, duration, count)
+            if type(val) == int or type(val) == float:
+                if grouping_key not in groups:
+                    groups[grouping_key] = 0
+                groups[grouping_key] += val
+            # if it's a string, we're counting the number of times it appears (used for response_count)
+            elif type(val) == str:
+                if grouping_key not in groups:
+                    groups[grouping_key] = {}
+                if val not in groups[grouping_key]:
+                    groups[grouping_key][val] = 0
+                groups[grouping_key][val] += 1
+    return groups
