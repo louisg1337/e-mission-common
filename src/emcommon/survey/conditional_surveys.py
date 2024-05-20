@@ -77,6 +77,15 @@ def survey_prompted_for_trip(composite_trip: dict, app_config: dict) -> str | No
         shows_if = get_shows_if_condition(survey)
         scope = dict(composite_trip)
         scope.update(conditional_survey_fns)
+
+        # remove this once confirmedMode is not used anywhere
+        shows_if = shows_if.replace('confirmedMode?.baseMode', 'primary_ble_sensed_mode')
+        if 'primary_ble_sensed_mode' not in scope:
+            try:
+                scope['primary_ble_sensed_mode'] = scope['confirmedMode']['baseMode']
+            except:
+                scope['primary_ble_sensed_mode'] = None
+
         try:
             if scoped_eval(shows_if, scope):
                 return survey['surveyName']
