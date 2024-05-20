@@ -1,10 +1,10 @@
-// Transcrypt'ed from Python, 2024-05-20 02:47:40
+// Transcrypt'ed from Python, 2024-05-20 14:40:35
 import {AssertionError, AttributeError, BaseException, DeprecationWarning, Exception, IndexError, IterableError, KeyError, NotImplementedError, RuntimeWarning, StopIteration, UserWarning, ValueError, Warning, __JsIterator__, __PyIterator__, __Terminal__, __add__, __and__, __call__, __class__, __envir__, __eq__, __floordiv__, __ge__, __get__, __getcm__, __getitem__, __getslice__, __getsm__, __gt__, __i__, __iadd__, __iand__, __idiv__, __ijsmod__, __ilshift__, __imatmul__, __imod__, __imul__, __in__, __init__, __ior__, __ipow__, __irshift__, __isub__, __ixor__, __jsUsePyNext__, __jsmod__, __k__, __kwargtrans__, __le__, __lshift__, __lt__, __matmul__, __mergefields__, __mergekwargtrans__, __mod__, __mul__, __ne__, __neg__, __nest__, __or__, __pow__, __pragma__, __pyUseJsNext__, __rshift__, __setitem__, __setproperty__, __setslice__, __sort__, __specialattrib__, __sub__, __super__, __t__, __terminal__, __truediv__, __withblock__, __xor__, abs, all, any, assert, bool, bytearray, bytes, callable, chr, copy, deepcopy, delattr, dict, dir, divmod, enumerate, filter, float, getattr, hasattr, input, int, isinstance, issubclass, len, list, map, max, min, object, ord, pow, print, property, py_TypeError, py_iter, py_metatype, py_next, py_reversed, py_typeof, range, repr, round, set, setattr, sorted, str, sum, tuple, zip} from './org.transcrypt.__runtime__.js';
 import * as emcsc from './emcommon.survey.conditional_surveys.js';
 import * as emcble from './emcommon.bluetooth.ble_matching.js';
 import * as util from './emcommon.util.js';
 import * as Logger from './emcommon.logger.js';
-export {emcsc, emcble, Logger, util};
+export {util, emcsc, Logger, emcble};
 var __name__ = 'emcommon.metrics.metrics_summaries';
 export var app_config = null;
 export var labels_map = null;
@@ -85,7 +85,13 @@ export var get_summary_for_metric = function (metric, composite_trips) {
 	}
 	var days_summaries = [];
 	for (var [date, trips] of days_of_metrics_data.py_items ()) {
-		var summary_for_day = dict ({'date': date});
+		var summary_for_day = dict ({'date': date, 'nUsers': len ((function () {
+			var __accu0__ = [];
+			for (var o of trips) {
+				__accu0__.append ([o ['user_id'], 1]);
+			}
+			return dict (__accu0__);
+		}) ())});
 		summary_for_day.py_update (metric_summary_for_trips (metric, trips));
 		days_summaries.append (summary_for_day);
 	}
