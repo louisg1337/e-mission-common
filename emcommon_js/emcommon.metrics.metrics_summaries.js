@@ -1,45 +1,82 @@
-// Transcrypt'ed from Python, 2024-04-30 00:49:34
+// Transcrypt'ed from Python, 2024-05-20 01:59:30
 import {AssertionError, AttributeError, BaseException, DeprecationWarning, Exception, IndexError, IterableError, KeyError, NotImplementedError, RuntimeWarning, StopIteration, UserWarning, ValueError, Warning, __JsIterator__, __PyIterator__, __Terminal__, __add__, __and__, __call__, __class__, __envir__, __eq__, __floordiv__, __ge__, __get__, __getcm__, __getitem__, __getslice__, __getsm__, __gt__, __i__, __iadd__, __iand__, __idiv__, __ijsmod__, __ilshift__, __imatmul__, __imod__, __imul__, __in__, __init__, __ior__, __ipow__, __irshift__, __isub__, __ixor__, __jsUsePyNext__, __jsmod__, __k__, __kwargtrans__, __le__, __lshift__, __lt__, __matmul__, __mergefields__, __mergekwargtrans__, __mod__, __mul__, __ne__, __neg__, __nest__, __or__, __pow__, __pragma__, __pyUseJsNext__, __rshift__, __setitem__, __setproperty__, __setslice__, __sort__, __specialattrib__, __sub__, __super__, __t__, __terminal__, __truediv__, __withblock__, __xor__, abs, all, any, assert, bool, bytearray, bytes, callable, chr, copy, deepcopy, delattr, dict, dir, divmod, enumerate, filter, float, getattr, hasattr, input, int, isinstance, issubclass, len, list, map, max, min, object, ord, pow, print, property, py_TypeError, py_iter, py_metatype, py_next, py_reversed, py_typeof, range, repr, round, set, setattr, sorted, str, sum, tuple, zip} from './org.transcrypt.__runtime__.js';
+import * as emcsc from './emcommon.survey.conditional_surveys.js';
+import * as emcble from './emcommon.bluetooth.ble_matching.js';
+import * as util from './emcommon.util.js';
 import * as Logger from './emcommon.logger.js';
-export {Logger};
+export {emcble, util, emcsc, Logger};
 var __name__ = 'emcommon.metrics.metrics_summaries';
-export var labeled_mode_for_trip = function (composite_trip, trip_labels_map) {
-	var UNLABELED = 'unlabeled';
-	if (!(composite_trip)) {
-		return UNLABELED;
+export var app_config = null;
+export var labels_map = null;
+export var label_for_trip = function (composite_trip, label_key) {
+	var label_key = label_key.upper ();
+	var label_key_confirm = label_key.lower () + '_confirm';
+	Logger.log_debug (__mod__ ('called label_for_trip with label_key %s for trip %s', tuple ([label_key, composite_trip])));
+	if (__in__ ('user_input', composite_trip) && __in__ (label_key_confirm, composite_trip ['user_input'])) {
+		return composite_trip ['user_input'] [label_key_confirm];
 	}
-	if (__in__ ('user_input', composite_trip) && __in__ ('mode_confirm', composite_trip ['user_input'])) {
-		return composite_trip ['user_input'] ['mode_confirm'];
+	if (labels_map && __in__ (composite_trip ['_id'] ['$oid'], labels_map) && __in__ (label_key, labels_map [composite_trip ['_id'] ['$oid']])) {
+		return labels_map [composite_trip ['_id'] ['$oid']] [label_key] ['data'] ['label'];
 	}
-	if (trip_labels_map && __in__ (composite_trip ['_id'] ['$oid'], trip_labels_map)) {
-		if (__in__ ('MODE', trip_labels_map [composite_trip ['_id'] ['$oid']])) {
-			return trip_labels_map [composite_trip ['_id'] ['$oid']] ['MODE'] ['data'] ['label'];
-		}
-	}
-	return UNLABELED;
+	return null;
 };
-export var generate_summaries = function (metrics, composite_trips, trip_labels_map) {
+export var survey_answered_for_trip = function (composite_trip) {
+	Logger.log_debug (__mod__ ('called survey_answered_for_trip for trip %s', composite_trip));
+	if (__in__ ('user_input', composite_trip) && __in__ ('trip_user_input', composite_trip ['user_input'])) {
+		return composite_trip ['user_input'] ['trip_user_input'] ['data'] ['name'];
+	}
+	if (labels_map && __in__ (composite_trip ['_id'] ['$oid'], labels_map) && __in__ ('SURVEY', labels_map [composite_trip ['_id'] ['$oid']]) && __in__ ('data', labels_map [composite_trip ['_id'] ['$oid']] ['SURVEY'])) {
+		return labels_map [composite_trip ['_id'] ['$oid']] ['SURVEY'] ['data'] ['name'];
+	}
+	return null;
+};
+export var generate_summaries = function (metric_list, composite_trips, _app_config, _labels_map) {
+	if (typeof _labels_map == 'undefined' || (_labels_map != null && _labels_map.hasOwnProperty ("__kwargtrans__"))) {;
+		var _labels_map = null;
+	};
+	app_config = _app_config;
+	labels_map = _labels_map;
+	var composite_trips = (function () {
+		var __accu0__ = [];
+		for (var trip of composite_trips) {
+			if (__in__ ('data', trip)) {
+				__accu0__.append (util.flatten_db_entry (trip));
+			}
+		}
+		return __accu0__;
+	}) ();
+	var metric_list = dict (metric_list);
 	return (function () {
 		var __accu0__ = [];
-		for (var metric of metrics) {
-			__accu0__.append ([metric, get_summary_for_metric (metric, composite_trips, trip_labels_map)]);
+		for (var metric of metric_list.py_items ()) {
+			__accu0__.append ([metric [0], get_summary_for_metric (metric, composite_trips)]);
 		}
 		return dict (__accu0__);
 	}) ();
 };
-export var value_of_metric_for_trip = function (metric, trip, trip_labels_map) {
-	if (metric == 'distance') {
+export var value_of_metric_for_trip = function (metric_name, grouping_field, trip) {
+	if (metric_name == 'distance') {
 		return trip ['distance'];
 	}
-	else if (metric == 'count') {
+	else if (metric_name == 'count') {
 		return 1;
 	}
-	else if (metric == 'duration') {
+	else if (metric_name == 'duration') {
 		return trip ['duration'];
+	}
+	else if (metric_name == 'response_count') {
+		if (grouping_field.endswith ('_confirm')) {
+			return (label_for_trip (trip, grouping_field.__getslice__ (0, -(8), 1)) ? 'responded' : 'not_responded');
+		}
+		else if (grouping_field == 'survey') {
+			var prompted_survey = emcsc.survey_prompted_for_trip (trip, app_config);
+			var answered_survey = survey_answered_for_trip (trip);
+			return (answered_survey == prompted_survey ? 'responded' : 'not_responded');
+		}
 	}
 	return null;
 };
-export var get_summary_for_metric = function (metric, composite_trips, trip_labels_map) {
+export var get_summary_for_metric = function (metric, composite_trips) {
 	var days_of_metrics_data = dict ({});
 	for (var trip of composite_trips) {
 		var date = trip ['start_fmt_time'].py_split ('T') [0];
@@ -51,24 +88,59 @@ export var get_summary_for_metric = function (metric, composite_trips, trip_labe
 	var days_summaries = [];
 	for (var [date, trips] of days_of_metrics_data.py_items ()) {
 		var summary_for_day = dict ({'date': date});
-		summary_for_day.py_update (metric_summary_by_mode (metric, trips, trip_labels_map));
+		summary_for_day.py_update (metric_summary_for_trips (metric, trips));
 		days_summaries.append (summary_for_day);
 	}
 	return days_summaries;
 };
-export var metric_summary_by_mode = function (metric, composite_trips, trip_labels_map) {
-	var mode_to_metric_map = dict ({});
+export var grouping_field_fns = dict ({'mode_confirm': (function __lambda__ (trip) {
+	return label_for_trip (trip, 'mode') || 'UNLABELED';
+}), 'purpose_confirm': (function __lambda__ (trip) {
+	return label_for_trip (trip, 'purpose') || 'UNLABELED';
+}), 'replaced_mode_confirm': (function __lambda__ (trip) {
+	return label_for_trip (trip, 'replaced_mode') || 'UNLABELED';
+}), 'survey': (function __lambda__ (trip) {
+	return emcsc.survey_prompted_for_trip (trip, app_config);
+}), 'primary_ble_sensed_mode': (function __lambda__ (trip) {
+	return emcble.primary_ble_sensed_mode_for_trip (trip) || 'UNKNOWN';
+})});
+export var metric_summary_for_trips = function (metric, composite_trips) {
+	var groups = dict ({});
 	if (!(composite_trips)) {
-		return mode_to_metric_map;
+		return groups;
 	}
 	for (var trip of composite_trips) {
-		var mode_key = 'mode_' + labeled_mode_for_trip (trip, trip_labels_map);
-		if (!__in__ (mode_key, mode_to_metric_map)) {
-			mode_to_metric_map [mode_key] = 0;
+		if (!__in__ ('primary_ble_sensed_mode', trip)) {
+			trip ['primary_ble_sensed_mode'] = emcble.primary_ble_sensed_mode_for_trip (trip) || 'UNKNOWN';
 		}
-		mode_to_metric_map [mode_key] += value_of_metric_for_trip (metric, trip, trip_labels_map);
+		for (var grouping_field of metric [1]) {
+			if (!__in__ (grouping_field, grouping_field_fns)) {
+				continue;
+			}
+			var field_value_for_trip = grouping_field_fns [grouping_field] (trip);
+			if (field_value_for_trip === null) {
+				continue;
+			}
+			var grouping_key = (grouping_field + '_') + field_value_for_trip;
+			var val = value_of_metric_for_trip (metric [0], grouping_field, trip);
+			if (py_typeof (val) == int || py_typeof (val) == float) {
+				if (!__in__ (grouping_key, groups)) {
+					groups [grouping_key] = 0;
+				}
+				groups [grouping_key] += val;
+			}
+			else if (py_typeof (val) == str) {
+				if (!__in__ (grouping_key, groups)) {
+					groups [grouping_key] = dict ({});
+				}
+				if (!__in__ (val, groups [grouping_key])) {
+					groups [grouping_key] [val] = 0;
+				}
+				groups [grouping_key] [val]++;
+			}
+		}
 	}
-	return mode_to_metric_map;
+	return groups;
 };
 
 //# sourceMappingURL=emcommon.metrics.metrics_summaries.map
