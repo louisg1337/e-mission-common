@@ -92,6 +92,7 @@ def get_summary_for_metric(metric: tuple[str, list[str]], composite_trips: list)
     for date, trips in days_of_metrics_data.items():
         summary_for_day = {
             'date': date,
+            'nUsers': len({o['user_id']: 1 for o in trips}),
         }
         summary_for_day.update(metric_summary_for_trips(metric, trips))
         days_summaries.append(summary_for_day)
