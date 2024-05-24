@@ -34,11 +34,9 @@ def survey_answered_for_trip(composite_trip: dict) -> str | None:
     global labels_map
     if 'user_input' in composite_trip and 'trip_user_input' in composite_trip['user_input']:
         return composite_trip['user_input']['trip_user_input']['data']['name']
-    if labels_map \
-      and composite_trip['_id']['$oid'] in labels_map \
-      and 'SURVEY' in labels_map[composite_trip['_id']['$oid']] \
-      and 'data' in labels_map[composite_trip['_id']['$oid']]['SURVEY']:
-        return labels_map[composite_trip['_id']['$oid']]['SURVEY']['data']['name']
+    if labels_map and composite_trip['_id']['$oid'] in labels_map:
+        survey = dict(labels_map[composite_trip['_id']['$oid']]).values()[0]
+        return survey['data']['name']
     return None
 
 
