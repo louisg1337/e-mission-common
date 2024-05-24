@@ -63,7 +63,6 @@ def survey_prompted_for_trip(composite_trip: dict, app_config: dict) -> str | No
     :param app_config: app config
     :return: the name of the survey that was prompted for the trip, or None if no survey was prompted
     """
-    Logger.log_debug('called survey_prompted_for_trip for trip %s' % composite_trip)
     potential_surveys = None
     try:
         potential_surveys = app_config['survey_info']['buttons']['trip-label']

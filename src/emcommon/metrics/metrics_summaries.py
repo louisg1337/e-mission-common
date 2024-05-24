@@ -18,7 +18,6 @@ def label_for_trip(composite_trip: dict, label_key: str) -> str:
     global labels_map
     label_key = label_key.upper()
     label_key_confirm = label_key.lower() + '_confirm'
-    Logger.log_debug('called label_for_trip with label_key %s for trip %s' % (label_key, composite_trip))
     if 'user_input' in composite_trip and label_key_confirm in composite_trip['user_input']:
         return composite_trip['user_input'][label_key_confirm]
     if labels_map and composite_trip['_id']['$oid'] in labels_map \
@@ -33,7 +32,6 @@ def survey_answered_for_trip(composite_trip: dict) -> str | None:
     :return: the name of the survey that was answered for the trip, or None if no survey was answered
     """
     global labels_map
-    Logger.log_debug('called survey_answered_for_trip for trip %s' % composite_trip)
     if 'user_input' in composite_trip and 'trip_user_input' in composite_trip['user_input']:
         return composite_trip['user_input']['trip_user_input']['data']['name']
     if labels_map \
