@@ -45,7 +45,13 @@ def generate_summaries(metric_list: dict[str, list[str]], composite_trips: list,
     global app_config, labels_map
     app_config = _app_config
     labels_map = _labels_map
-    composite_trips = [util.flatten_db_entry(trip) if 'data' in trip else trip for trip in composite_trips]
+    # only use composite_trips created from confirmed_trips (not from confirmed_untrackeds),
+    # and flatten them if not already flattened
+    composite_trips = [
+        util.flatten_db_entry(trip) if 'data' in trip else trip
+        for trip in composite_trips
+        if trip['origin_key'] == 'analysis/confirmed_trip'
+    ]
     metric_list = dict(metric_list)
     return {metric[0]: get_summary_for_metric(metric, composite_trips) for metric in metric_list.items()}
 
