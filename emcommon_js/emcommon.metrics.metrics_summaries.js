@@ -1,10 +1,10 @@
-// Transcrypt'ed from Python, 2024-05-23 22:51:12
+// Transcrypt'ed from Python, 2024-05-31 09:32:47
 import {AssertionError, AttributeError, BaseException, DeprecationWarning, Exception, IndexError, IterableError, KeyError, NotImplementedError, RuntimeWarning, StopIteration, UserWarning, ValueError, Warning, __JsIterator__, __PyIterator__, __Terminal__, __add__, __and__, __call__, __class__, __envir__, __eq__, __floordiv__, __ge__, __get__, __getcm__, __getitem__, __getslice__, __getsm__, __gt__, __i__, __iadd__, __iand__, __idiv__, __ijsmod__, __ilshift__, __imatmul__, __imod__, __imul__, __in__, __init__, __ior__, __ipow__, __irshift__, __isub__, __ixor__, __jsUsePyNext__, __jsmod__, __k__, __kwargtrans__, __le__, __lshift__, __lt__, __matmul__, __mergefields__, __mergekwargtrans__, __mod__, __mul__, __ne__, __neg__, __nest__, __or__, __pow__, __pragma__, __pyUseJsNext__, __rshift__, __setitem__, __setproperty__, __setslice__, __sort__, __specialattrib__, __sub__, __super__, __t__, __terminal__, __truediv__, __withblock__, __xor__, abs, all, any, assert, bool, bytearray, bytes, callable, chr, copy, deepcopy, delattr, dict, dir, divmod, enumerate, filter, float, getattr, hasattr, input, int, isinstance, issubclass, len, list, map, max, min, object, ord, pow, print, property, py_TypeError, py_iter, py_metatype, py_next, py_reversed, py_typeof, range, repr, round, set, setattr, sorted, str, sum, tuple, zip} from './org.transcrypt.__runtime__.js';
 import * as emcsc from './emcommon.survey.conditional_surveys.js';
 import * as emcble from './emcommon.bluetooth.ble_matching.js';
 import * as util from './emcommon.util.js';
 import * as Logger from './emcommon.logger.js';
-export {Logger, emcble, util, emcsc};
+export {emcsc, emcble, Logger, util};
 var __name__ = 'emcommon.metrics.metrics_summaries';
 export var app_config = null;
 export var labels_map = null;
@@ -29,17 +29,24 @@ export var survey_answered_for_trip = function (composite_trip) {
 	}
 	return null;
 };
-export var generate_summaries = function (metric_list, composite_trips, _app_config, _labels_map) {
+export var generate_summaries = function (metric_list, trips, _app_config, _labels_map) {
 	if (typeof _labels_map == 'undefined' || (_labels_map != null && _labels_map.hasOwnProperty ("__kwargtrans__"))) {;
 		var _labels_map = null;
 	};
 	app_config = _app_config;
 	labels_map = _labels_map;
-	var composite_trips = (function () {
+	var trips_flat = (function () {
 		var __accu0__ = [];
-		for (var trip of composite_trips) {
-			if (trip ['origin_key'] == 'analysis/confirmed_trip') {
-				__accu0__.append ((__in__ ('data', trip) ? util.flatten_db_entry (trip) : trip));
+		for (var trip of trips) {
+			__accu0__.append ((__in__ ('data', trip) ? util.flatten_db_entry (trip) : trip));
+		}
+		return __accu0__;
+	}) ();
+	var confirmed_trips = (function () {
+		var __accu0__ = [];
+		for (var trip of trips_flat) {
+			if (trip ['key'] == 'analysis/confirmed_trip' || trip ['origin_key'] == 'analysis/confirmed_trip') {
+				__accu0__.append (trip);
 			}
 		}
 		return __accu0__;
@@ -48,7 +55,7 @@ export var generate_summaries = function (metric_list, composite_trips, _app_con
 	return (function () {
 		var __accu0__ = [];
 		for (var metric of metric_list.py_items ()) {
-			__accu0__.append ([metric [0], get_summary_for_metric (metric, composite_trips)]);
+			__accu0__.append ([metric [0], get_summary_for_metric (metric, confirmed_trips)]);
 		}
 		return dict (__accu0__);
 	}) ();
@@ -75,9 +82,9 @@ export var value_of_metric_for_trip = function (metric_name, grouping_field, tri
 	}
 	return null;
 };
-export var get_summary_for_metric = function (metric, composite_trips) {
+export var get_summary_for_metric = function (metric, confirmed_trips) {
 	var days_of_metrics_data = dict ({});
-	for (var trip of composite_trips) {
+	for (var trip of confirmed_trips) {
 		var date = trip ['start_fmt_time'].py_split ('T') [0];
 		if (!__in__ (date, days_of_metrics_data)) {
 			days_of_metrics_data [date] = [];
@@ -109,12 +116,12 @@ export var grouping_field_fns = dict ({'mode_confirm': (function __lambda__ (tri
 }), 'primary_ble_sensed_mode': (function __lambda__ (trip) {
 	return emcble.primary_ble_sensed_mode_for_trip (trip) || 'UNKNOWN';
 })});
-export var metric_summary_for_trips = function (metric, composite_trips) {
+export var metric_summary_for_trips = function (metric, confirmed_trips) {
 	var groups = dict ({});
-	if (!(composite_trips)) {
+	if (!(confirmed_trips)) {
 		return groups;
 	}
-	for (var trip of composite_trips) {
+	for (var trip of confirmed_trips) {
 		if (!__in__ ('primary_ble_sensed_mode', trip)) {
 			trip ['primary_ble_sensed_mode'] = emcble.primary_ble_sensed_mode_for_trip (trip) || 'UNKNOWN';
 		}

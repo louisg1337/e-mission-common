@@ -31,7 +31,7 @@ def flatten_db_entry(entry: dict) -> dict:
           _id: entry._id,
           'user_id': entry.user_id,
           key: entry.metadata.key,
-          origin_key: entry.metadata.origin_key || entry.metadata.key
+          origin_key: entry.metadata.origin_key
       }
     """)
     ?'''
@@ -42,6 +42,6 @@ def flatten_db_entry(entry: dict) -> dict:
         '_id': entry['_id'],
         'user_id': entry['user_id'],
         'key': entry['metadata']['key'],
-        'origin_key': entry['metadata']['origin_key'] if 'origin_key' in entry['metadata'] else entry['metadata']['key']
+        'origin_key': entry['metadata']['origin_key'] if 'origin_key' in entry['metadata'] else None
     }
     # __pragma__('noskip')

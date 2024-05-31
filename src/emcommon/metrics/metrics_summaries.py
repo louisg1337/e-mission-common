@@ -41,19 +41,32 @@ def survey_answered_for_trip(composite_trip: dict) -> str | None:
 
 
 # @memoize
-def generate_summaries(metric_list: dict[str, list[str]], composite_trips: list, _app_config, _labels_map: dict[str, any] = None):
+def generate_summaries(metric_list: dict[str, list[str]], trips: list, _app_config, _labels_map: dict[str, any] = None):
+    """
+    :param metric_list: dict of metric names to lists of grouping fields, e.g. { 'distance': ['mode_confirm', 'purpose_confirm'] }
+    :param trips: list of trips, which may be either confirmed_trips or composite_trips
+    :param _app_config: app_config, or partial app_config with 'survey_info' present
+    :param _labels_map: map of trip_ids to unprocessed user input labels
+    """
     global app_config, labels_map
     app_config = _app_config
     labels_map = _labels_map
-    # only use composite_trips created from confirmed_trips (not from confirmed_untrackeds),
-    # and flatten them if not already flattened
-    composite_trips = [
+    # flatten all the incoming trips (if not already flat)
+    trips_flat = [
         util.flatten_db_entry(trip) if 'data' in trip else trip
-        for trip in composite_trips
-        if trip['origin_key'] == 'analysis/confirmed_trip'
+        for trip in trips
     ]
+    # only use: a) confirmed_trips, or b) composite_trips that originated from confirmed_trips
+    # (this filters out any composite_trips that originated from confirmed_untrackeds)
+    # we can treat all that remain as confirmed_trips
+    confirmed_trips = [
+        trip for trip in trips_flat
+        if trip['key'] == 'analysis/confirmed_trip'
+        or trip['origin_key'] == 'analysis/confirmed_trip'
+    ]
+
     metric_list = dict(metric_list)
-    return {metric[0]: get_summary_for_metric(metric, composite_trips) for metric in metric_list.items()}
+    return {metric[0]: get_summary_for_metric(metric, confirmed_trips) for metric in metric_list.items()}
 
 
 def value_of_metric_for_trip(metric_name: str, grouping_field: str, trip: dict):
@@ -74,16 +87,16 @@ def value_of_metric_for_trip(metric_name: str, grouping_field: str, trip: dict):
     return None
 
 
-def get_summary_for_metric(metric: tuple[str, list[str]], composite_trips: list):
+def get_summary_for_metric(metric: tuple[str, list[str]], confirmed_trips: list):
     """
     :param metric: tuple of metric name and list of grouping fields
-    :param composite_trips: list of composite trips
+    :param confirmed_trips: list of confirmed trips
     :return: a list of dicts, each representing a summary of the metric on one day
-    e.g. get_summary_for_metric(('distance', ['mode_confirm', 'purpose_confirm']), composite_trips)
+    e.g. get_summary_for_metric(('distance', ['mode_confirm', 'purpose_confirm']), confirmed_trips)
       -> [ { 'date': '2024-05-20', 'mode_confirm_bike': 1000, 'mode_confirm_walk': 500, 'purpose_confirm_home': 1500 } ]
     """
     days_of_metrics_data = {}
-    for trip in composite_trips:
+    for trip in confirmed_trips:
         # for now, we're only grouping by day. First part of ISO date is YYYY-MM-DD
         date = trip['start_fmt_time'].split('T')[0]
         if date not in days_of_metrics_data:
@@ -109,21 +122,21 @@ grouping_field_fns = {
     'primary_ble_sensed_mode': lambda trip: emcble.primary_ble_sensed_mode_for_trip(trip) or 'UNKNOWN',
 }
 
-def metric_summary_for_trips(metric: tuple[str, list[str]], composite_trips: list):
+def metric_summary_for_trips(metric: tuple[str, list[str]], confirmed_trips: list):
     """
     :param metric: tuple of metric name and list of grouping fields
-    :param composite_trips: list of composite trips
+    :param confirmed_trips: list of confirmed trips
     :return: a dict of { groupingfield_value : metric_total } for the given metric and trips
-    e.g. metric_summary_for_trips(('distance', ['mode_confirm', 'purpose_confirm']), composite_trips)
+    e.g. metric_summary_for_trips(('distance', ['mode_confirm', 'purpose_confirm']), confirmed_trips)
       -> { 'mode_confirm_bike': 1000, 'mode_confirm_walk': 500, 'purpose_confirm_home': 1500 }
-    e.g. metric_summary_for_trips(('response_count', ['mode_confirm', 'purpose_confirm']), composite_trips)
+    e.g. metric_summary_for_trips(('response_count', ['mode_confirm', 'purpose_confirm']), confirmed_trips)
       -> { 'mode_confirm_bike': { 'responded': 10, 'not_responded': 5 }, 'mode_confirm_walk': { 'responded': 5, 'not_responded': 10 } }
     """
     global app_config
     groups = {}
-    if not composite_trips:
+    if not confirmed_trips:
         return groups
-    for trip in composite_trips:
+    for trip in confirmed_trips:
         if 'primary_ble_sensed_mode' not in trip:
             trip['primary_ble_sensed_mode'] = emcble.primary_ble_sensed_mode_for_trip(trip) or 'UNKNOWN'
         for grouping_field in metric[1]:
