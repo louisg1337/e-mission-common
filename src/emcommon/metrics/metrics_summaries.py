@@ -64,6 +64,8 @@ def generate_summaries(metric_list: dict[str, list[str]], trips: list, _app_conf
         if trip['key'] == 'analysis/confirmed_trip'
         or trip['origin_key'] == 'analysis/confirmed_trip'
     ]
+    # sort trips by start ts
+    confirmed_trips.sort(key=lambda trip: trip['start_ts'])
 
     metric_list = dict(metric_list)
     return {metric[0]: get_summary_for_metric(metric, confirmed_trips) for metric in metric_list.items()}
