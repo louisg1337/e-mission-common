@@ -14,6 +14,17 @@ KWH_PER_GALLON_DIESEL = KWH_PER_GALLON_GASOLINE * 1.14
 KG_CO2_PER_KWH_GASOLINE = KG_CO2_PER_GALLON_GASOLINE / KWH_PER_GALLON_GASOLINE
 KG_CO2_PER_KWH_DIESEL = KG_CO2_PER_GALLON_DIESEL / KWH_PER_GALLON_DIESEL
 
+MI_PER_KM = 0.621371
+
+def mpge_to_wh_per_km(mpge: float) -> float:
+  """
+  Convert miles per gallon of gasoline equivalent (MPGe) to watt-hours per kilometer.
+  e.g. mpge_to_wh_per_km(100) -> 209.40202700000003
+  """
+  return MI_PER_KM / mpge * KWH_PER_GALLON_GASOLINE * 1000
+
+print(mpge_to_wh_per_km(22))
+
 def grid_emission_rate_for_trip(trip):
   # TODO
   pass
