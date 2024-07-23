@@ -4,7 +4,7 @@ energy usage (kwh) and carbon emissions (kg_co2).
 """
 
 import emcommon.logger as Logger
-import emcommon.metrics.footprint.egrid_carbon_by_year as egrid_data
+from emcommon.metrics.footprint.egrid_carbon_by_year import egrid_data
 
 # https://www.epa.gov/energy/greenhouse-gases-equivalencies-calculator-calculations-and-references
 KG_CO2_PER_GALLON_GASOLINE = 8.89
@@ -39,8 +39,8 @@ def get_egrid_carbon_intensity(year: int, zipcode: str) -> float:
   year = str(year)
   try:
     region = None
-    for r in egrid_data[year]['zip_regions']:
-      if zipcode in egrid_data[year]['zip_regions'][r]:
+    for r in egrid_data[year]['regions_zips']:
+      if zipcode in egrid_data[year]['regions_zips'][r]:
         region = r
         break
     return egrid_data[year]['regions_src2erta'][region]
