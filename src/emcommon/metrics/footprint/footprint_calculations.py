@@ -61,7 +61,7 @@ def calc_footprint_for_trip(trip, mode_label_option):
   rich_mode = emcdb.get_rich_mode(mode_label_option)
   mode_footprint = rich_mode['footprint']
   if 'transit' in mode_footprint:
-    mode_footprint = get_mode_footprint_for_transit(trip, mode_footprint)
+    mode_footprint = get_mode_footprint_for_transit(trip, mode_footprint['transit'])
   kwh_total = 0
   kg_co2_total = 0
   for fuel_type, fuel_type_footprint in mode_footprint.items():
