@@ -1,4 +1,4 @@
-from emcommon.metrics.footprint_calculations import mpge_to_wh_per_km
+from emcommon.metrics.footprint.footprint_calculations import mpge_to_wh_per_km
 
 mode_colors = {
     "pink": '#c32e85', # oklch(56% 0.2 350)     # e-car
