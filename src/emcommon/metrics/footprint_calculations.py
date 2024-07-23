@@ -2,6 +2,7 @@
 Functions for calculating the estimated footprint of a trip, both in terms of
 energy usage (kwh) and carbon emissions (kg_co2).
 """
+import emcommon.metrics.footprint.egrid_carbon_by_year as egrid_data
 
 # https://www.epa.gov/energy/greenhouse-gases-equivalencies-calculator-calculations-and-references
 KG_CO2_PER_GALLON_GASOLINE = 8.89
@@ -25,9 +26,26 @@ def mpge_to_wh_per_km(mpge: float) -> float:
 
 print(mpge_to_wh_per_km(22))
 
-def grid_emission_rate_for_trip(trip):
-  # TODO
-  pass
+# __pragma__('jsiter')
+def get_egrid_carbon_intensity(year: int, zipcode: str) -> float:
+  """
+  Returns the estimated carbon intensity of the electricity grid in the given zip code for the given year.
+  (units in kg CO2e per MWh)
+  :param year: The year to get the data for, e.g. 2022
+  :param zipcode: The 5-digit zip code to get the data for; e.g. "45221" (Cincinnati), "02115" (Boston)
+  """
+  year = str(year)
+  try:
+    region = None
+    for r in egrid_data[year]['zip_regions']:
+      if zipcode in egrid_data[year]['zip_regions'][r]:
+        region = r
+        break
+    return egrid_data[year]['regions_src2erta'][region]
+  except KeyError:
+    return None
+# __pragma__('nojsiter')
+
 
 def calc_footprint_for_trip(trip, mode_footprint):
   """
@@ -40,7 +58,9 @@ def calc_footprint_for_trip(trip, mode_footprint):
     # distance in m converted to km; km * Wh/km results in Wh; convert to kWh
     kwh = (distance / 1000) * fuel_type_footprint['wh_per_km'] / 1000
     if fuel_type == 'electric':
-      kg_per_kwh = grid_emission_rate_for_trip(trip)
+      year = trip['start_fmt_time'].split('-')[0]
+      zipcode = trip['start_confirmed_place']['zipcode'] # TODO
+      kg_per_kwh = get_egrid_carbon_intensity(year, zipcode)
       kg_co2 = kwh * kg_per_kwh
     if fuel_type == 'gasoline':
       kg_co2 = kwh * KG_CO2_PER_KWH_GASOLINE
