@@ -2,6 +2,8 @@
 Functions for calculating the estimated footprint of a trip, both in terms of
 energy usage (kwh) and carbon emissions (kg_co2).
 """
+
+import emcommon.logger as Logger
 import emcommon.metrics.footprint.egrid_carbon_by_year as egrid_data
 
 # https://www.epa.gov/energy/greenhouse-gases-equivalencies-calculator-calculations-and-references
@@ -73,3 +75,12 @@ def calc_footprint_for_trip(trip, mode_footprint):
     'kwh': kwh_total,
     'kg_co2': kg_co2_total
   }
+
+def get_footprint_for_rich_mode(rich_mode):
+    if 'footprint' in rich_mode:
+        return rich_mode['footprint']
+    elif 'footprint_equivalent' in rich_mode:
+        import emcommon.diary.base_modes as emcdb
+        return emcdb.BASE_MODES[rich_mode['footprint_equivalent']]['footprint']
+    Logger.log_warning('No footprint found for mode: ' + rich_mode['mode'])
+    return {}
