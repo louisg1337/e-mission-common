@@ -75,12 +75,3 @@ def calc_footprint_for_trip(trip, mode_footprint):
     'kwh': kwh_total,
     'kg_co2': kg_co2_total
   }
-
-def get_footprint_for_rich_mode(rich_mode):
-    if 'footprint' in rich_mode:
-        return rich_mode['footprint']
-    elif 'footprint_equivalent' in rich_mode:
-        import emcommon.diary.base_modes as emcdb
-        return emcdb.BASE_MODES[rich_mode['footprint_equivalent']]['footprint']
-    Logger.log_warning('No footprint found for mode: ' + rich_mode['mode'])
-    return {}

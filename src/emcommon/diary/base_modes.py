@@ -218,3 +218,28 @@ def get_base_mode_by_key(motionName):
     key = ('' + motionName).upper()
     pop = key.split('.').pop() # if "MotionTypes.WALKING", then just take "WALKING"
     return BASE_MODES.get(pop, BASE_MODES["UNKNOWN"])
+
+
+def get_rich_mode(label_option):
+    """
+    A "label_option" is one of the mode options given by a deployer in the label_options config
+    It can extend on a base mode, override props, or borrow "equivalent" props from another base mode
+    :param label_option: a dict with partial, full, or extended mode properties
+    :return: a rich mode object with all the properties filled in
+    e.g. get_rich_mode({ "base_mode": "WALKING", "color": "#000000" })
+    -> { "icon": "walk", "color": "#000000", "met": WALKING_METS, "footprint": {} }
+    """
+    rich_mode = {}
+    base_props = ['icon', 'color', 'met', 'footprint']
+    for prop in base_props:
+        if prop in label_option:
+            rich_mode[prop] = label_option[prop]
+        elif f"{prop}_equivalent" in label_option:
+            import emcommon.diary.base_modes as emcdb
+            rich_mode[prop] = emcdb.get_base_mode_by_key(label_option[f"{prop}_equivalent"])[prop]
+        else:
+            # backwards compat for camelCase; eventually want to standardize to snake_case
+            for bm in ['base_mode', 'baseMode']: 
+                if bm in label_option:
+                    rich_mode[prop] = get_base_mode_by_key(label_option[bm])[prop]
+    return rich_mode
