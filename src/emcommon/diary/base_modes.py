@@ -53,7 +53,7 @@ MOPED_AVG_MPG = 100
 TAXI_WH_PER_KM = 941.5
 AIR_WH_PER_KM = 999
 
-AIR_FOOTPRINT = { "gasoline": { "wh_per_km": AIR_WH_PER_KM } }
+AIR_FOOTPRINT = { "jet_fuel": { "wh_per_km": AIR_WH_PER_KM } }
 CAR_FOOTPRINT = { "gasoline": { "wh_per_km": mpge_to_wh_per_km(GAS_CAR_MPG) } }
 E_CAR_FOOTPRINT = { "electric": { "wh_per_km": mpge_to_wh_per_km(ECAR_MPGE) } }
 PHEV_CAR_FOOTPRINT = {
