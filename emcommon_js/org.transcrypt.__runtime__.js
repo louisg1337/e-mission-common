@@ -1,10 +1,10 @@
-// Transcrypt'ed from Python, 2024-05-20 01:59:30
+// Transcrypt'ed from Python, 2024-07-23 01:20:58
 var __name__ = 'org.transcrypt.__runtime__';
 export var __envir__ = {};
 __envir__.interpreter_name = 'python';
 __envir__.transpiler_name = 'transcrypt';
 __envir__.executor_name = __envir__.transpiler_name;
-__envir__.transpiler_version = '3.9.0';
+__envir__.transpiler_version = '3.9.2';
 
 export function __nest__ (headObject, tailNames, value) {
     var current = headObject;
@@ -494,6 +494,21 @@ export function max (nrOrSeq) {
 export function min (nrOrSeq) {
     return arguments.length == 1 ? Math.min (...nrOrSeq) : Math.min (...arguments);
 };
+export function bin (nbr) {
+    const sign = nbr<0 ? '-' : '';
+    const bin_val = Math.abs(parseInt(nbr)).toString(2);
+    return sign.concat('0b', bin_val);
+};
+export function oct (nbr) {
+    const sign = nbr<0 ? '-' : '';
+    const oct_val = Math.abs(parseInt(nbr)).toString(8);
+    return sign.concat('0o', oct_val);
+};
+export function hex (nbr) {
+    const sign = nbr<0 ? '-' : '';
+    const hex_val = Math.abs(parseInt(nbr)).toString(16);
+    return sign.concat('0x', hex_val);
+};
 export var abs = Math.abs;
 export function round (number, ndigits) {
     if (ndigits) {
@@ -666,8 +681,11 @@ export function sum (iterable) {
     }
     return result;
 }
-export function enumerate (iterable) {
-    return zip (range (len (iterable)), iterable);
+export function enumerate(iterable, start = 0) {
+    if (start.hasOwnProperty("__kwargtrans__")) {
+        start = start['start'];
+    }
+    return zip(range(start, len(iterable) + start), iterable);
 }
 export function copy (anObject) {
     if (anObject == null || typeof anObject == "object") {
@@ -1053,14 +1071,16 @@ String.prototype.__str__ = function () {
 String.prototype.capitalize = function () {
     return this.charAt (0).toUpperCase () + this.slice (1);
 };
-String.prototype.endswith = function (suffix) {
+String.prototype.endswith = function (suffix, start=0, end) {
+    if (end === undefined) {end = this.length}
+    const str = this.slice(start, end)
     if (suffix instanceof Array) {
         for (var i=0;i<suffix.length;i++) {
-            if (this.slice (-suffix[i].length) == suffix[i])
+            if (str.slice (-suffix[i].length) === suffix[i])
                 return true;
         }
     } else
-        return suffix == '' || this.slice (-suffix.length) == suffix;
+        return suffix === '' || str.slice (-suffix.length) === suffix;
     return false;
 };
 String.prototype.find = function (sub, start) {
@@ -1142,7 +1162,15 @@ String.prototype.lower = function () {
     return this.toLowerCase ();
 };
 String.prototype.py_replace = function (old, aNew, maxreplace) {
-    return this.split (old, maxreplace) .join (aNew);
+    if (maxreplace === undefined || maxreplace < 0) {
+        return this.split(old).join(aNew);
+    } else if (maxreplace === 0) {
+        return this;
+    } else {
+        const pre = this.split(old, maxreplace).join(aNew);
+        const rest = this.slice(this.split(old, maxreplace).join(old).length + 1)
+        return pre.concat(rest.length>0 ? aNew : '', rest);
+    }
 };
 String.prototype.lstrip = function () {
     return this.replace (/^\s*/g, '');
@@ -1196,16 +1224,19 @@ String.prototype.py_split = function (sep, maxsplit) {
         }
     }
 };
-String.prototype.startswith = function (prefix) {
+String.prototype.startswith = function (prefix, start=0, end) {
+    if (end === undefined) {end = this.length}
+    const str = this.slice(start, end)
     if (prefix instanceof Array) {
-        for (var i=0;i<prefix.length;i++) {
-            if (this.indexOf (prefix [i]) == 0)
+        for (let i=0;i<prefix.length;i++) {
+            if (str.indexOf (prefix [i]) === 0)
                 return true;
         }
-    } else
-        return this.indexOf (prefix) == 0;
+    } else {
+        return str.indexOf(prefix) === 0;
+    }
     return false;
-};
+}
 String.prototype.strip = function () {
     return this.trim ();
 };

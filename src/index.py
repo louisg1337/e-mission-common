@@ -7,7 +7,7 @@ import emcommon.metrics.active_travel.active_travel_calculations as active_trave
 import emcommon.survey.conditional_surveys as conditional_surveys
 import emcommon.bluetooth.ble_matching as ble_matching
 import emcommon.diary.base_modes as base_modes
-import emcommon.metrics.footprint_calculations as footprint_calculations
+import emcommon.metrics.footprint.footprint_calculations as footprint_calculations
 
 def dict_to_js_obj(py_dict):
     """
