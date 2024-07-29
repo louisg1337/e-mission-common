@@ -57,7 +57,6 @@ def calc_footprint_for_trip(trip, mode_label_option):
   Calculate the estimated footprint of a trip, which includes 'kwh' and 'kg_co2' fields.
   """
   distance = trip['distance']
-
   rich_mode = emcdb.get_rich_mode(mode_label_option)
   mode_footprint = rich_mode['footprint']
   if 'transit' in mode_footprint:
@@ -75,12 +74,18 @@ def calc_footprint_for_trip(trip, mode_label_option):
       kg_per_kwh = get_egrid_carbon_intensity(year, zipcode)
       kg_co2 = kwh * kg_per_kwh
     else:
-      Logger.error('Unknown fuel type: ' + fuel_type)
+      Logger.log_error('Unknown fuel type: ' + fuel_type)
       continue
     kwh_energy += kwh
     kg_co2_total += kg_co2
 
+  # Divide by number of passengers, if specified:
+  # Some modes (air, transit modes) already account for this; the given footprints are per
+  # passenger-km and 'passengers' is not defined.
+  # Other modes (car, carpool) have a flexible number of passengers. The footprints are
+  # per vehicle-km. Dividing by 'passengers' gives the footprint per passenger-km.
+  passengers = mode_label_option['passengers'] if 'passengers' in mode_label_option else 1
   return {
-    'kwh': kwh_total,
-    'kg_co2': kg_co2_total
+    'kwh': kwh_total / passengers,
+    'kg_co2': kg_co2_total / passengers,
   }
