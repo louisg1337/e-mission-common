@@ -1,4 +1,5 @@
 import emcommon.logger as Logger
+from emcommon.metrics.footprint.util import mpge_to_wh_per_km
 
 mode_colors = {
     "pink": '#c32e85', # oklch(56% 0.2 350)     # e-car

@@ -7,36 +7,7 @@ import emcommon.logger as Logger
 from emcommon.metrics.footprint.egrid_carbon_by_year import egrid_data
 import emcommon.diary.base_modes as emcdb
 import emcommon.metrics.footprint.transit_calculations as transit
-
-# https://www.epa.gov/energy/greenhouse-gases-equivalencies-calculator-calculations-and-references
-
-KWH_PER_GALLON_GASOLINE = 33.7 # from the EPA, used as the basis for MPGe
-DIESEL_GGE = 0.88  # .88 gal diesel ≈ 1 gal gasoline
-KWH_PER_GALLON_DIESEL = KWH_PER_GALLON_GASOLINE * 1.14
-# GGE constants found from https://epact.energy.gov/fuel-conversion-factors
-KWH_PER_GALLON_BIODIESEL = KWH_PER_GALLON_GASOLINE * 1.05 
-KWH_PER_GALLON_LPG = KWH_PER_GALLON_GASOLINE * .74
-KWH_PER_GALLON_CNG = KWH_PER_GALLON_GASOLINE * .26
-KWH_PER_KG_HYDROGEN = KWH_PER_GALLON_GASOLINE * 1.00
-
-FUELS_KG_CO2_PER_KWH = {
-  # 8.89 kg CO2 / gal (EPA)
-  'gasoline': 8.89 / KWH_PER_GALLON_GASOLINE,
-  # 10.18 kg CO2 / gal (EPA)
-  'diesel': 10.18 / (KWH_PER_GALLON_GASOLINE / DIESEL_GGE),
-  # 0.25 kg CO2 / kWh (https://www.eia.gov/environment/emissions/co2_vol_mass.php)
-  'jet_fuel': 0.25,
-}
-
-MI_PER_KM = 0.621371
-
-def mpge_to_wh_per_km(mpge: float) -> float:
-  """
-  Convert miles per gallon of gasoline equivalent (MPGe) to watt-hours per kilometer.
-  e.g. mpge_to_wh_per_km(100) -> 209.40202700000003
-  """
-  return MI_PER_KM / mpge * KWH_PER_GALLON_GASOLINE * 1000
-
+import emcommon.metrics.footprint.util as util
 
 # __pragma__('jsiter')
 def get_egrid_carbon_intensity(year: int, zipcode: str) -> float:
