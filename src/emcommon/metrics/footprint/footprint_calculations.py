@@ -17,16 +17,30 @@ def get_egrid_carbon_intensity(year: int, zipcode: str) -> float:
   :param year: The year to get the data for, e.g. 2022
   :param zipcode: The 5-digit zip code to get the data for; e.g. "45221" (Cincinnati), "02115" (Boston)
   """
-  year = str(year)
-  try:
-    region = None
-    for r in egrid_data[year]['regions_zips']:
-      if zipcode in egrid_data[year]['regions_zips'][r]:
-        region = r
-        break
-    return egrid_data[year]['regions_src2erta'][region]
-  except KeyError:
-    return None
+  is_provisional = False
+  year_str = str(year)
+  if year_str not in egrid_data:
+      year_str = str(util.find_closest_available_year(year, egrid_data.keys()))
+      is_provisional = True
+      Logger.log_warn(f"eGRID data not available for year {year}; using closest available year {year_str}")    
+  region = None
+  for r in egrid_data[year_str]['regions_zips']:
+    if zipcode in egrid_data[year_str]['regions_zips'][r]:
+      region = r
+      break
+  return (
+    # kg_per_kwh
+    egrid_data[year_str]['regions_src2erta'][region],
+    # metadata
+    {
+      "source": "eGRID",
+      "is_provisional": is_provisional,
+      "year": year_str,
+      "requested_year": year,
+      "zipcode": zipcode,
+      "egrid_region": region,
+    },
+  )
 # __pragma__('nojsiter')
 
 
@@ -34,27 +48,32 @@ def calc_footprint_for_trip(trip, mode_label_option):
   """
   Calculate the estimated footprint of a trip, which includes 'kwh' and 'kg_co2' fields.
   """
+  Logger.log_debug('Getting footprint for trip: ' + str(trip) +
+                   ', with mode option: ' + str(mode_label_option))
+  metadata = {}
   distance = trip['distance']
   rich_mode = emcdb.get_rich_mode(mode_label_option)
   mode_footprint = rich_mode['footprint']
   if 'transit' in mode_footprint:
-    mode_footprint = transit.get_mode_footprint_for_transit(trip, mode_footprint['transit'])
+    [mode_footprint, metadata] = transit.get_intensities_for_trip(trip, mode_footprint['transit'])
   kwh_total = 0
   kg_co2_total = 0
   for fuel_type, fuel_type_footprint in mode_footprint.items():
     # distance in m converted to km; km * Wh/km results in Wh; convert to kWh
     kwh = (distance / 1000) * fuel_type_footprint['wh_per_km'] / 1000
-    if fuel_type in FUELS_KG_CO2_PER_KWH:
-      kg_co2 = kwh * FUELS_KG_CO2_PER_KWH[fuel_type]
+    if fuel_type in util.FUELS_KG_CO2_PER_KWH:
+      Logger.log_debug('Using default carbon intensity for fuel type: ' + fuel_type)
+      kg_co2 = kwh * util.FUELS_KG_CO2_PER_KWH[fuel_type]
     elif fuel_type == 'electric':
-      year = trip['start_fmt_time'].split('-')[0]
+      Logger.log_debug('Using eGRID carbon intensity for electric')
+      year = util.year_of_trip(trip)
       zipcode = trip['start_confirmed_place']['zipcode'] # TODO
-      kg_per_kwh = get_egrid_carbon_intensity(year, zipcode)
+      [kg_per_kwh, metadata] = get_egrid_carbon_intensity(year, zipcode)
       kg_co2 = kwh * kg_per_kwh
     else:
       Logger.log_error('Unknown fuel type: ' + fuel_type)
       continue
-    kwh_energy += kwh
+    kwh_total += kwh
     kg_co2_total += kg_co2
 
   # Divide by number of passengers, if specified:
@@ -66,4 +85,5 @@ def calc_footprint_for_trip(trip, mode_label_option):
   return {
     'kwh': kwh_total / passengers,
     'kg_co2': kg_co2_total / passengers,
+    "metadata": metadata,
   }
