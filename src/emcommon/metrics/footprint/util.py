@@ -32,3 +32,12 @@ def mpge_to_wh_per_km(mpge: float) -> float:
   e.g. mpge_to_wh_per_km(100) -> 209.40202700000003
   """
   return MI_PER_KM / mpge * KWH_PER_GAL_GASOLINE * 1000
+
+
+def year_of_trip(trip) -> int:
+  return int(trip['start_fmt_time'].split('-')[0])
+
+def find_closest_available_year(year, available_years: list) -> int:
+    year = int(year)
+    available_years = [int(y) for y in available_years]
+    return min(available_years, key=lambda x: abs(x - year))
