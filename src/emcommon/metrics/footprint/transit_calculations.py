@@ -36,12 +36,20 @@ def get_intensities_for_year_and_uace(year: int, uace: str, modes: list[str]):
     Logger.log_debug(f"Getting mode footprint for transit modes {modes} in year {year} and UACE {uace}")
 
     footprint = {}
-    is_provisional = False
+    metadata = {
+        "source": "NTD",
+        "is_provisional": False,
+        "year": year,
+        "requested_year": year,
+        "uace_code": uace,
+        "modes": modes,
+    }
 
     year_str = str(year)
     if (year_str not in ntd_data):
         year_str = str(util.find_closest_available_year(year, ntd_data.keys()))
-        is_provisional = True
+        metadata["is_provisional"] = True
+        metadata["year"] = year_str
         Logger.log_warn(f"NTD data not available for year {year}; using closest available year {year_str}")
 
     agency_mode_fueltypes = []
@@ -85,7 +93,6 @@ def get_intensities_for_year_and_uace(year: int, uace: str, modes: list[str]):
             "wh_per_km": weighted_mean(wh_per_km_values, weights),
             "weight": sum(weights)
         }
-        print('weighted mean', weighted_mean(wh_per_km_values, weights))
 
     # take the overall weighted average between fuel types
     wh_per_km_values = [entry['wh_per_km'] for entry in agency_mode_fueltypes]
@@ -95,17 +102,5 @@ def get_intensities_for_year_and_uace(year: int, uace: str, modes: list[str]):
         "weight": sum(weights)
     }
 
-    ret = (
-        footprint,
-        # metadata
-        {
-            "source": "NTD",
-            "is_provisional": is_provisional,
-            "year": year_str,
-            "requested_year": year,
-            "uace_code": uace,
-            "modes": modes
-        }
-    )
-    Logger.log_debug(f"footprint = {ret[0]}; metadata = {ret[1]}")
-    return ret
+    Logger.log_info(f"footprint = {footprint}; metadata = {metadata}")
+    return (footprint, metadata)

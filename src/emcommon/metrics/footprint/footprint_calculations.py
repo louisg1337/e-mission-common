@@ -17,30 +17,30 @@ def get_egrid_carbon_intensity(year: int, zipcode: str) -> float:
   :param year: The year to get the data for, e.g. 2022
   :param zipcode: The 5-digit zip code to get the data for; e.g. "45221" (Cincinnati), "02115" (Boston)
   """
-  is_provisional = False
-  year_str = str(year)
-  if year_str not in egrid_data:
-      year_str = str(util.find_closest_available_year(year, egrid_data.keys()))
-      is_provisional = True
-      Logger.log_warn(f"eGRID data not available for year {year}; using closest available year {year_str}")    
-  region = None
-  for r in egrid_data[year_str]['regions_zips']:
-    if zipcode in egrid_data[year_str]['regions_zips'][r]:
-      region = r
+  metadata = {
+    "source": "eGRID",
+    "is_provisional": False,
+    "year": year,
+    "requested_year": year,
+    "zipcode": zipcode,
+    "egrid_region": None,
+  }
+  if str(year) not in egrid_data:
+      year = util.find_closest_available_year(year, egrid_data.keys())
+      metadata['year'] = year
+      metadata['is_provisional'] = True
+      Logger.log_warn(f"eGRID data not available for year {metadata['requested_year']}; "
+                    + f"Using closest available year {metadata['year']}")
+  egrid_data_for_year = egrid_data[str(year)]
+  for r in egrid_data_for_year['regions_zips']:
+    if zipcode in egrid_data_for_year['regions_zips'][r]:
+      metadata['egrid_region'] = r
       break
-  return (
-    # kg_per_kwh
-    egrid_data[year_str]['regions_src2erta'][region],
-    # metadata
-    {
-      "source": "eGRID",
-      "is_provisional": is_provisional,
-      "year": year_str,
-      "requested_year": year,
-      "zipcode": zipcode,
-      "egrid_region": region,
-    },
-  )
+  if metadata['egrid_region'] is None:
+      Logger.log_error(f"eGRID region not found for zipcode {zipcode} in year {year}")
+      return None
+  kg_per_kwh = egrid_data_for_year['regions_src2erta'][metadata['egrid_region']]
+  return (kg_per_kwh, metadata)
 # __pragma__('nojsiter')
 
 
@@ -71,7 +71,7 @@ def calc_footprint_for_trip(trip, mode_label_option):
       [kg_per_kwh, metadata] = get_egrid_carbon_intensity(year, zipcode)
       kg_co2 = kwh * kg_per_kwh
     else:
-      Logger.log_error('Unknown fuel type: ' + fuel_type)
+      Logger.log_warn('Unknown fuel type: ' + fuel_type)
       continue
     kwh_total += kwh
     kg_co2_total += kg_co2
