@@ -26,7 +26,7 @@ def get_intensities_for_trip(trip, modes):
     uace_code = get_uace_by_zipcode(trip["start_confirmed_place"]["zipcode"], year)
     return get_intensities_for_year_and_uace(year, uace_code, modes)
 
-def get_intensities_for_year_and_uace(year: int, uace: str, modes: list[str]):
+def get_intensities_for_year_and_uace(year: int, uace: str | None = None, modes: list[str] | None = None):
     """
     Returns the estimated energy intensity by fuel type across the given modes in the urban area of the given trip.
     :param trip: The trip to get the data for, e.g. {"year": "2022", "distance": 1000, "start_confirmed_place": {"zipcode": "45221"}}
@@ -43,6 +43,7 @@ def get_intensities_for_year_and_uace(year: int, uace: str, modes: list[str]):
         "requested_year": year,
         "uace_code": uace,
         "modes": modes,
+        "ntd_ids": [],
     }
 
     year_str = str(year)
@@ -54,28 +55,41 @@ def get_intensities_for_year_and_uace(year: int, uace: str, modes: list[str]):
 
     agency_mode_fueltypes = []
     for entry in ntd_data[year_str]:
-        if entry["UACE Code"] == uace and entry["Mode"] in modes:
-            Logger.log_debug(f"NTD ID: {entry['NTD ID']}; "
-                           + f"Mode = {entry['Mode']}; "
-                           + f"pkm = {entry['Passenger km']}; "
-                           + f"all_fuels_km = {entry['All Fuels (km)']}; "
-                           + f"average_passengers = {entry['Average Passengers']}")
-            pkm = entry['Passenger km']
-            all_fuels_km = entry['All Fuels (km)']
-            average_passengers = entry['Average Passengers']
-            for fuel_type in fuel_types:
-                km_value = entry.get(f"{fuel_type} (km)", 0)
-                wh_per_km_value = entry.get(f"{fuel_type} (Wh/km)", 0)
-                if km_value and wh_per_km_value:
-                    agency_mode_fueltypes.append({
-                        "ntd_id": entry['NTD ID'],
-                        "mode": entry['Mode'],
-                        "fuel_type": fuel_type,
-                        "pkm": km_value / all_fuels_km * pkm,
-                        "wh_per_km": wh_per_km_value / average_passengers
-                    })
+        # skip entries that don't match the requested modes or UACE
+        if (modes and entry["Mode"] not in modes) or (uace and entry["UACE Code"] != uace):
+            continue
+        pkm = entry['Passenger km']
+        all_fuels_km = entry['All Fuels (km)']
+        average_passengers = entry['Average Passengers']
+        for fuel_type in fuel_types:
+            km_value = entry.get(f"{fuel_type} (km)", 0)
+            wh_per_km_value = entry.get(f"{fuel_type} (Wh/km)", 0)
+            if km_value and wh_per_km_value:
+                agency_mode_fueltypes.append({
+                    "fuel_type": fuel_type,
+                    "pkm": km_value / all_fuels_km * pkm,
+                    "wh_per_km": wh_per_km_value / average_passengers
+                })
+                if entry['NTD ID'] not in metadata["ntd_ids"]:
+                    metadata["ntd_ids"].append(entry['NTD ID'])
 
     total_pkm = sum([entry['pkm'] for entry in agency_mode_fueltypes])
+
+    # TODO Should there be a threshold for the minimum amount of data required?
+    # i.e. if there is only one tiny agency that matches the criteria, should we trust it?
+    # if total_pkm < 100000:
+
+    if not agency_mode_fueltypes:
+        Logger.log_info(f"Insufficient data for year {year} and UACE {uace} and modes {modes}")
+        if uace:
+            Logger.log_info("Retrying with UACE = None")
+            return get_intensities_for_year_and_uace(year, None, modes)
+        if modes:
+            Logger.log_info("Retrying with modes = None")
+            return get_intensities_for_year_and_uace(year, uace, None)
+        Logger.log_error("No data available for any UACE or modes")
+        return (None, metadata)
+
     for entry in agency_mode_fueltypes:
         entry['weight'] = entry['pkm'] / total_pkm
     Logger.log_debug(f"agency_mode_fueltypes = {agency_mode_fueltypes}")
