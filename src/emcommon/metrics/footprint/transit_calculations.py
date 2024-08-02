@@ -35,7 +35,7 @@ def get_intensities_for_year_and_uace(year: int, uace: str, modes: list[str]):
     """
     Logger.log_debug(f"Getting mode footprint for transit modes {modes} in year {year} and UACE {uace}")
 
-    footprint = {}
+    intensities = {}
     metadata = {
         "source": "NTD",
         "is_provisional": False,
@@ -89,7 +89,7 @@ def get_intensities_for_year_and_uace(year: int, uace: str, modes: list[str]):
         weights = [entry['weight'] for entry in fuel_type_entries]
         Logger.log_debug(f"fuel_type = {fuel_type}; wh_per_km_values = {wh_per_km_values}; weights = {weights}")
         fuel_type = fuel_type.lower()
-        footprint[fuel_type] = {
+        intensities[fuel_type] = {
             "wh_per_km": weighted_mean(wh_per_km_values, weights),
             "weight": sum(weights)
         }
@@ -97,10 +97,10 @@ def get_intensities_for_year_and_uace(year: int, uace: str, modes: list[str]):
     # take the overall weighted average between fuel types
     wh_per_km_values = [entry['wh_per_km'] for entry in agency_mode_fueltypes]
     weights = [entry['weight'] for entry in agency_mode_fueltypes]
-    footprint['overall'] = {
+    intensities['overall'] = {
         "wh_per_km": weighted_mean(wh_per_km_values, weights),
         "weight": sum(weights)
     }
 
-    Logger.log_info(f"footprint = {footprint}; metadata = {metadata}")
-    return (footprint, metadata)
+    Logger.log_info(f"intensities = {intensities}; metadata = {metadata}")
+    return (intensities, metadata)
