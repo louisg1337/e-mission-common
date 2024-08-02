@@ -14,6 +14,7 @@ Note: Transcrypt actually does have the capability to translate the Python loggi
 
 # only executed in Python environment
 import logging  # __: skip
+logging.basicConfig(level=logging.DEBUG)  # __: skip
 
 
 def log_debug(*args):
