@@ -24,11 +24,11 @@ def get_uace_by_zipcode(zipcode: str, year: int) -> str:
 def get_intensities_for_trip(trip, modes):
     year = util.year_of_trip(trip)
     uace_code = get_uace_by_zipcode(trip["start_confirmed_place"]["zipcode"], year)
-    return get_intensities_for_year_and_uace(year, uace_code, modes)
+    return get_intensities(year, uace_code, modes)
 
-def get_intensities_for_year_and_uace(year: int, uace: str | None = None, modes: list[str] | None = None):
+def get_intensities(year: int, uace: str | None = None, modes: list[str] | None = None):
     """
-    Returns the estimated energy intensity by fuel type across the given modes in the urban area of the given trip.
+    Returns estimated energy intensities by fuel type across the given modes in the urban area of the given trip.
     :param trip: The trip to get the data for, e.g. {"year": "2022", "distance": 1000, "start_confirmed_place": {"zipcode": "45221"}}
     :param modes: The NTD modes to get the data for, e.g. ["MB","CB"] (https://www.transit.dot.gov/ntd/national-transit-database-ntd-glossary)
     :returns: A dictionary of energy intensities by fuel type, with weights, e.g. {"gasoline": { "wh_per_km": 1000, "weight": 0.5 }, "diesel": { "wh_per_km": 2000, "weight": 0.5 }, "overall": { "wh_per_km": 1500, "weight": 1.0 } }
@@ -83,16 +83,16 @@ def get_intensities_for_year_and_uace(year: int, uace: str | None = None, modes:
         Logger.log_info(f"Insufficient data for year {year} and UACE {uace} and modes {modes}")
         if uace:
             Logger.log_info("Retrying with UACE = None")
-            return get_intensities_for_year_and_uace(year, None, modes)
+            return get_intensities(year, None, modes)
         if modes:
             Logger.log_info("Retrying with modes = None")
-            return get_intensities_for_year_and_uace(year, uace, None)
+            return get_intensities(year, uace, None)
         Logger.log_error("No data available for any UACE or modes")
         return (None, metadata)
 
     for entry in agency_mode_fueltypes:
         entry['weight'] = entry['pkm'] / total_pkm
-    Logger.log_debug(f"agency_mode_fueltypes = {agency_mode_fueltypes}")
+    Logger.log_debug(f"agency_mode_fueltypes = {agency_mode_fueltypes}"[:500])
 
     for fuel_type in fuel_types:
         fuel_type_entries = [entry for entry in agency_mode_fueltypes
@@ -101,7 +101,7 @@ def get_intensities_for_year_and_uace(year: int, uace: str | None = None, modes:
             continue
         wh_per_km_values = [entry['wh_per_km'] for entry in fuel_type_entries]
         weights = [entry['weight'] for entry in fuel_type_entries]
-        Logger.log_debug(f"fuel_type = {fuel_type}; wh_per_km_values = {wh_per_km_values}; weights = {weights}")
+        Logger.log_debug(f"fuel_type = {fuel_type}; wh_per_km_values = {wh_per_km_values}; weights = {weights}"[:500])
         fuel_type = fuel_type.lower()
         intensities[fuel_type] = {
             "wh_per_km": weighted_mean(wh_per_km_values, weights),
@@ -116,5 +116,5 @@ def get_intensities_for_year_and_uace(year: int, uace: str | None = None, modes:
         "weight": sum(weights)
     }
 
-    Logger.log_info(f"intensities = {intensities}; metadata = {metadata}")
+    Logger.log_info(f"intensities = {intensities}; metadata = {metadata}"[:500])
     return (intensities, metadata)
