@@ -27,47 +27,40 @@ class TestTransitCalculations(unittest.TestCase):
             self.assertEqual(result, cincinnati_uace_code)
 
     def test_bus_nyc(self):
-        [intensities, metadata] = emcmft.get_intensities_for_year_and_uace(2022,
-                                                                           NYC_UACE_CODE,
-                                                                           BUS_MODES)
+        [intensities, metadata] = emcmft.get_intensities(2022, NYC_UACE_CODE, BUS_MODES)
         self.assertAlmostEqual(intensities['overall']['wh_per_km'], 663.16, places=2)
         self.assertEqual(len(metadata['ntd_ids']), 24)
 
     def test_bus_chicago(self):
-        [intensities, metadata] = emcmft.get_intensities_for_year_and_uace(2022,
-                                                                           CHICAGO_UACE_CODE,
-                                                                           BUS_MODES)
+        [intensities, metadata] = emcmft.get_intensities(2022, CHICAGO_UACE_CODE, BUS_MODES)
         self.assertAlmostEqual(intensities['overall']['wh_per_km'], 1072.50, places=2)
         self.assertEqual(len(metadata['ntd_ids']), 3)
 
     def test_bus_nationwide(self):
-        [intensities, metadata] = emcmft.get_intensities_for_year_and_uace(2022,
-                                                                           None,
-                                                                           BUS_MODES)
+        [intensities, metadata] = emcmft.get_intensities(2022, None, BUS_MODES)
         self.assertAlmostEqual(intensities['overall']['wh_per_km'], 867.36, places=2)
         self.assertEqual(len(metadata['ntd_ids']), 415)
 
     def test_train_nyc(self):
-        [intensities, metadata] = emcmft.get_intensities_for_year_and_uace(2022,
-                                                                           NYC_UACE_CODE,
-                                                                           TRAIN_MODES)
+        [intensities, metadata] = emcmft.get_intensities(2022, NYC_UACE_CODE, TRAIN_MODES)
         self.assertAlmostEqual(intensities['overall']['wh_per_km'], 164.68, places=2)
         self.assertEqual(len(metadata['ntd_ids']), 6)
 
     def test_train_chicago(self):
-        [intensities, metadata] = emcmft.get_intensities_for_year_and_uace(2022,
-                                                                           CHICAGO_UACE_CODE,
-                                                                           TRAIN_MODES)
+        [intensities, metadata] = emcmft.get_intensities(2022, CHICAGO_UACE_CODE, TRAIN_MODES)
         self.assertAlmostEqual(intensities['overall']['wh_per_km'], 401.71, places=2)
         # only 2 passenger rail lines in Chicago - "the L" and Metra !
         self.assertEqual(len(metadata['ntd_ids']), 2)
 
     def test_train_nationwide(self):
-        [intensities, metadata] = emcmft.get_intensities_for_year_and_uace(2022,
-                                                                           None,
-                                                                           TRAIN_MODES)
+        [intensities, metadata] = emcmft.get_intensities(2022, None, TRAIN_MODES)
         self.assertAlmostEqual(intensities['overall']['wh_per_km'], 240.85, places=2)
         self.assertEqual(len(metadata['ntd_ids']), 40)
+
+    def test_all_modes_nationwide(self):
+        [intesities, metadata] = emcmft.get_intensities(2022, None, None)
+        self.assertAlmostEqual(intesities['overall']['wh_per_km'], 547.53, places=2)
+        self.assertEqual(len(metadata['ntd_ids']), 487)
 
 
 class TestTransitCalculationsFakeData(unittest.TestCase):
@@ -88,9 +81,7 @@ class TestTransitCalculationsFakeData(unittest.TestCase):
                 "Electric (km)": 800, "Electric (Wh/km)": 1500, "All Fuels (km)": 4000,
                 "Passenger km": 25000, "Vehicle km": 5000, "Average Passengers": 5},
         ])
-        [intensities, metadata] = emcmft.get_intensities_for_year_and_uace(2022,
-                                                                           'foo',
-                                                                           BUS_MODES)
+        [intensities, metadata] = emcmft.get_intensities(2022, 'foo', BUS_MODES)
         self.assertDictEqual(intensities, {
             "diesel": {"wh_per_km": 550, "weight": 0.8},
             "electric": {"wh_per_km": 450, "weight": 0.2},

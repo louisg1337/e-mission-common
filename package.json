@@ -3,7 +3,20 @@
   "type": "module",
   "version": "0.5.4",
   "description": "A common library to share code between projects in the e-mission-platform. Written in Python and exposed as both Python and JavaScript.",
-  "main": "./emcommon_js/index.js",
+  "main": "./emcommon_js/dist/index.js",
+  "scripts": {
+    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js"
+  },
+  "jest": {
+    "testMatch": ["**/test/**/*.js"],
+    "testEnvironment": "jsdom",
+    "transform": {}
+  },
+  "devDependencies": {
+    "@types/jest": "^29.5.12",
+    "jest": "^29.7.0",
+    "jest-environment-jsdom": "^29.7.0"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/JGreenlee/e-mission-common.git"

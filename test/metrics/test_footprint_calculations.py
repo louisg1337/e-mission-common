@@ -6,7 +6,7 @@ import emcommon.metrics.footprint.util as util
 KG_PER_LB = 0.453592
 
 
-class TestTransitCalculations(unittest.TestCase):
+class TestFootprintCalculations(unittest.TestCase):
     def test_get_egrid_carbon_intensity(self):
         # expected values (collected from https://www.epa.gov/egrid/data-explorer)
         # "I want to explore <output emission rates(lb/MWh)> for <CO₂ equivalent> for <all fuels>
@@ -93,6 +93,3 @@ class TestTransitCalculations(unittest.TestCase):
         footprint = footprint_calculations.calc_footprint_for_trip(fake_trip, fake_mode)
         for key in expected_footprint:
             self.assertAlmostEqual(footprint[key], expected_footprint[key], places=2)
-
-        fake_mode = {'base_mode': 'TRAIN'}
-        expected_footprint = {'kwh': 22.65, 'kg_co2': 1098.96}
