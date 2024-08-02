@@ -53,7 +53,7 @@ def calc_footprint_for_trip(trip, mode_label_option):
   metadata = {}
   distance = trip['distance']
   rich_mode = emcdb.get_rich_mode(mode_label_option)
-  mode_footprint = rich_mode['footprint']
+  mode_footprint = dict(rich_mode['footprint'])
   if 'transit' in mode_footprint:
     [mode_footprint, metadata] = transit.get_intensities_for_trip(trip, mode_footprint['transit'])
   kwh_total = 0

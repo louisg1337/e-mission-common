@@ -40,4 +40,5 @@ def year_of_trip(trip) -> int:
 def find_closest_available_year(year, available_years: list) -> int:
     year = int(year)
     available_years = [int(y) for y in available_years]
-    return min(available_years, key=lambda x: abs(x - year))
+    diffs = [abs(y - year) for y in available_years]
+    return available_years[diffs.index(min(diffs))]

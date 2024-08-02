@@ -15,8 +15,8 @@ def weighted_mean(values, weights):
 
 def get_uace_by_zipcode(zipcode: str, year: int) -> str:
     year = str(year - year % 10)
-    for uace in uace_zip_maps[year]:
-        if zipcode in uace_zip_maps[year][uace]:
+    for uace, zips in uace_zip_maps[year].items():
+        if zipcode in zips:
             return uace
     Logger.log_warn(f"UACE code not found for zipcode {zipcode} in year {year}")
     return None
@@ -97,7 +97,7 @@ def get_intensities(year: int, uace: str | None = None, modes: list[str] | None 
     for fuel_type in fuel_types:
         fuel_type_entries = [entry for entry in agency_mode_fueltypes
                              if entry['fuel_type'] == fuel_type]
-        if not fuel_type_entries:
+        if len(fuel_type_entries) == 0:
             continue
         wh_per_km_values = [entry['wh_per_km'] for entry in fuel_type_entries]
         weights = [entry['weight'] for entry in fuel_type_entries]
