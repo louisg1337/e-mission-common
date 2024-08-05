@@ -116,5 +116,3 @@ def get_intensities(year: int, uace: str | None = None, modes: list[str] | None 
 
     Logger.log_info(f"intensities = {intensities}; metadata = {metadata}"[:500])
     return (intensities, metadata)
-
-print(get_intensities(2022, "16264", ["MB", "CB"]))

@@ -7,7 +7,7 @@ from emcommon.diary.base_modes import BASE_MODES
 cities = [
     "63217", # New York
     "16264", # Chicago
-    "32167", # GAinesville
+    "32167", # Gainesville
     "16885", # Cincinnati
     "09271", # Boston
     "40429", # Houston
