@@ -5,6 +5,23 @@ import emcommon.metrics.footprint.util as util
 
 KG_PER_LB = 0.453592
 
+# https://www.cincinnati-oh.gov/finance/income-taxes/resources-references/street-listings-guide/
+CINCINNATI_ZIP_CODES = [
+    # "ZIP Codes Entirely Within Cincinnati"
+    "45220", "45221", "45201", "45202", "45203", "45206", # "45210" (Doesn't seem to exist)
+    "45214", "45219", "45220", "45221", "45223", "45225", "45226", # "45228" (Exists but is not in the ZIP - ZCTA mapping)
+    "45232", "45234", "45250", "45267", 
+    # "ZIP Codes Located Inside/Outside of Cincinnati"
+    "45204", "45205", "45207", "45208",
+    "45209", "45211", "45212", "45213",
+    "45215", "45216", "45217", "45224",
+    "45227", "45229", "45230", "45231",
+    "45233", "45237", "45238", "45239",
+    "45248",
+    # "ZIP Codes Entirely Outside of Cincinnati"
+    "45218", "45236", "45240", "45241", "45242", "45243", "45244", "45245",
+    "45246", "45247", "45249", "45251", "45252", "45253", "45254", "45255",
+]
 
 class TestFootprintCalculations(unittest.TestCase):
     def test_get_egrid_carbon_intensity(self):
@@ -17,22 +34,24 @@ class TestFootprintCalculations(unittest.TestCase):
         }
 
         # Cincinnati, OH (RFCW region)
-        [kg_per_kwh, metadata] = footprint_calculations.get_egrid_carbon_intensity(2022, "45221")
-        self.assertAlmostEqual(
-            kg_per_kwh,
-            expected_lbs_per_kwh["RFCW"] * KG_PER_LB,
-            places=2
-        )
-        expected_metadata = {
-            "source": "eGRID",
-            "is_provisional": False,
-            "year": 2022,
-            "requested_year": 2022,
-            "zipcode": "45221",
-            "egrid_region": "RFCW",
-        }
-        for key in expected_metadata:
-            self.assertEqual(metadata[key], expected_metadata[key])
+        for zipcode in CINCINNATI_ZIP_CODES:
+            print("Testing zipcode: ", zipcode)
+            [kg_per_kwh, metadata] = footprint_calculations.get_egrid_carbon_intensity(2022, zipcode)
+            self.assertAlmostEqual(
+                kg_per_kwh,
+                expected_lbs_per_kwh["RFCW"] * KG_PER_LB,
+                places=2
+            )
+            expected_metadata = {
+                "source": "eGRID",
+                "is_provisional": False,
+                "year": 2022,
+                "requested_year": 2022,
+                "zipcode": zipcode,
+                "egrid_region": "RFCW",
+            }
+            for key in expected_metadata:
+                self.assertEqual(metadata[key], expected_metadata[key])
 
         # Eagle Point, OR (NWPP region)
         [kg_per_kwh, metadata] = footprint_calculations.get_egrid_carbon_intensity(2023, "97524")

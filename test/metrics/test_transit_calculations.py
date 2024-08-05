@@ -3,6 +3,7 @@ import unittest
 import emcommon.metrics.footprint.transit_calculations as emcmft
 import emcommon.diary.base_modes as emcdb
 from emcommon.metrics.footprint.ntd_data_by_year import ntd_data
+from .test_footprint_calculations import CINCINNATI_ZIP_CODES
 
 NYC_UACE_CODE = "63217"
 CHICAGO_UACE_CODE = "16264"
@@ -13,15 +14,8 @@ TRAIN_MODES = emcdb.BASE_MODES['TRAIN']['footprint']['transit']
 
 class TestTransitCalculations(unittest.TestCase):
     def test_get_uace_by_zipcode(self):
-        # https://www.cincinnati-oh.gov/finance/income-taxes/resources-references/street-listings-guide/
-        # "ZIP Codes Entirely Within Cincinnati"
-        cincinnati_zip_codes = ["45220", "45221", "45201", "45202",
-                                "45203", "45206", "45210", "45214",
-                                "45219", "45220", "45221", "45223",
-                                "45225", "45226", "45228", "45232",
-                                "45234", "45250", "45267"]
         cincinnati_uace_code = "16885"
-        for zipcode in cincinnati_zip_codes:
+        for zipcode in CINCINNATI_ZIP_CODES:
             print("Testing zipcode: ", zipcode)
             result = emcmft.get_uace_by_zipcode(zipcode, 2022)
             self.assertEqual(result, cincinnati_uace_code)
