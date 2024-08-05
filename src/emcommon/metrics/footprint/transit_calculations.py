@@ -53,31 +53,29 @@ def get_intensities(year: int, uace: str | None = None, modes: list[str] | None 
         metadata["year"] = year_str
         Logger.log_warn(f"NTD data not available for year {year}; using closest available year {year_str}")
 
+    total_upt = 0
     agency_mode_fueltypes = []
     for entry in ntd_data[year_str]:
         # skip entries that don't match the requested modes or UACE
         if (modes and entry["Mode"] not in modes) or (uace and entry["UACE Code"] != uace):
             continue
-        pkm = entry['Passenger km']
-        all_fuels_km = entry['All Fuels (km)']
-        average_passengers = entry['Average Passengers']
+        upt = entry['Unlinked Passenger Trips']
+        total_upt += upt
         for fuel_type in fuel_types:
-            km_value = entry.get(f"{fuel_type} (km)", 0)
-            wh_per_km_value = entry.get(f"{fuel_type} (Wh/km)", 0)
-            if km_value and wh_per_km_value:
+            fuel_pct = entry.get(f"{fuel_type} (%)", 0)
+            wh_per_pkm = entry.get(f"{fuel_type} (Wh/pkm)", 0)
+            if fuel_pct and wh_per_pkm:
                 agency_mode_fueltypes.append({
                     "fuel_type": fuel_type,
-                    "pkm": km_value / all_fuels_km * pkm,
-                    "wh_per_km": wh_per_km_value / average_passengers
+                    "upt": fuel_pct / 100 * upt,
+                    "wh_per_km": wh_per_pkm
                 })
                 if entry['NTD ID'] not in metadata["ntd_ids"]:
                     metadata["ntd_ids"].append(entry['NTD ID'])
 
-    total_pkm = sum([entry['pkm'] for entry in agency_mode_fueltypes])
-
     # TODO Should there be a threshold for the minimum amount of data required?
     # i.e. if there is only one tiny agency that matches the criteria, should we trust it?
-    # if total_pkm < 100000:
+    # if total_upt < 10000:
 
     if not agency_mode_fueltypes:
         Logger.log_info(f"Insufficient data for year {year} and UACE {uace} and modes {modes}")
@@ -91,7 +89,7 @@ def get_intensities(year: int, uace: str | None = None, modes: list[str] | None 
         return (None, metadata)
 
     for entry in agency_mode_fueltypes:
-        entry['weight'] = entry['pkm'] / total_pkm
+        entry['weight'] = entry['upt'] / total_upt
     Logger.log_debug(f"agency_mode_fueltypes = {agency_mode_fueltypes}"[:500])
 
     for fuel_type in fuel_types:
@@ -118,3 +116,5 @@ def get_intensities(year: int, uace: str | None = None, modes: list[str] | None 
 
     Logger.log_info(f"intensities = {intensities}; metadata = {metadata}"[:500])
     return (intensities, metadata)
+
+print(get_intensities(2022, "16264", ["MB", "CB"]))
