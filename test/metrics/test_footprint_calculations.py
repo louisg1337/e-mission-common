@@ -82,14 +82,14 @@ class TestFootprintCalculations(unittest.TestCase):
         for key in expected_footprint:
             self.assertAlmostEqual(footprint[key], expected_footprint[key], places=2)
 
-    def test_nyc_transit_footprint(self):
+    def test_nyc_bus_footprint(self):
         fake_trip = {
             'distance': 10000,
             'start_fmt_time': '2022-01-01',
             'start_confirmed_place': {'zipcode': '10001'},
         }
         fake_mode = {'base_mode': 'BUS'}
-        expected_footprint = {'kwh': 22.65, 'kg_co2': 1098.96}
+        expected_footprint = {'kwh': 16.90, 'kg_co2': 714.99}
         footprint = footprint_calculations.calc_footprint_for_trip(fake_trip, fake_mode)
         for key in expected_footprint:
             self.assertAlmostEqual(footprint[key], expected_footprint[key], places=2)

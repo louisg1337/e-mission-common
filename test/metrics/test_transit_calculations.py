@@ -28,39 +28,39 @@ class TestTransitCalculations(unittest.TestCase):
 
     def test_bus_nyc(self):
         [intensities, metadata] = emcmft.get_intensities(2022, NYC_UACE_CODE, BUS_MODES)
-        self.assertAlmostEqual(intensities['overall']['wh_per_km'], 663.16, places=2)
-        self.assertEqual(len(metadata['ntd_ids']), 24)
+        self.assertAlmostEqual(intensities['overall']['wh_per_km'], 646.80, places=2)
+        self.assertEqual(len(metadata['ntd_ids']), 22)
 
     def test_bus_chicago(self):
         [intensities, metadata] = emcmft.get_intensities(2022, CHICAGO_UACE_CODE, BUS_MODES)
-        self.assertAlmostEqual(intensities['overall']['wh_per_km'], 1072.50, places=2)
-        self.assertEqual(len(metadata['ntd_ids']), 3)
+        self.assertAlmostEqual(intensities['overall']['wh_per_km'], 1048.12, places=2)
+        self.assertEqual(len(metadata['ntd_ids']), 2)
 
     def test_bus_nationwide(self):
         [intensities, metadata] = emcmft.get_intensities(2022, None, BUS_MODES)
-        self.assertAlmostEqual(intensities['overall']['wh_per_km'], 867.36, places=2)
-        self.assertEqual(len(metadata['ntd_ids']), 415)
+        self.assertAlmostEqual(intensities['overall']['wh_per_km'], 809.03, places=2)
+        self.assertEqual(len(metadata['ntd_ids']), 405)
 
     def test_train_nyc(self):
         [intensities, metadata] = emcmft.get_intensities(2022, NYC_UACE_CODE, TRAIN_MODES)
-        self.assertAlmostEqual(intensities['overall']['wh_per_km'], 164.68, places=2)
+        self.assertAlmostEqual(intensities['overall']['wh_per_km'], 24.79, places=2)
         self.assertEqual(len(metadata['ntd_ids']), 6)
 
     def test_train_chicago(self):
         [intensities, metadata] = emcmft.get_intensities(2022, CHICAGO_UACE_CODE, TRAIN_MODES)
-        self.assertAlmostEqual(intensities['overall']['wh_per_km'], 401.71, places=2)
-        # only 2 passenger rail lines in Chicago - "the L" and Metra !
-        self.assertEqual(len(metadata['ntd_ids']), 2)
+        self.assertAlmostEqual(intensities['overall']['wh_per_km'], 159.04, places=2)
+        # 3 passenger rail systems in Chicago - "the L", Metra, and South Shore Line
+        self.assertEqual(len(metadata['ntd_ids']), 3)
 
     def test_train_nationwide(self):
         [intensities, metadata] = emcmft.get_intensities(2022, None, TRAIN_MODES)
-        self.assertAlmostEqual(intensities['overall']['wh_per_km'], 240.85, places=2)
-        self.assertEqual(len(metadata['ntd_ids']), 40)
+        self.assertAlmostEqual(intensities['overall']['wh_per_km'], 67.71, places=2)
+        self.assertEqual(len(metadata['ntd_ids']), 48)
 
     def test_all_modes_nationwide(self):
         [intesities, metadata] = emcmft.get_intensities(2022, None, None)
-        self.assertAlmostEqual(intesities['overall']['wh_per_km'], 547.53, places=2)
-        self.assertEqual(len(metadata['ntd_ids']), 487)
+        self.assertAlmostEqual(intesities['overall']['wh_per_km'], 485.08, places=2)
+        self.assertEqual(len(metadata['ntd_ids']), 517)
 
 
 class TestTransitCalculationsFakeData(unittest.TestCase):
@@ -71,15 +71,15 @@ class TestTransitCalculationsFakeData(unittest.TestCase):
         """
         ntd_data["2022"].extend([
             {"NTD ID": "Agency A", "UACE Code": "foo", "Mode": "MB",
-                "Diesel (km)": 12000, "Diesel (Wh/km)": 3000, "All Fuels (km)": 12000,
-                "Passenger km": 60000, "Vehicle km": 12000, "Average Passengers": 5},
+             "Diesel (Wh/pkm)": 600, "Diesel (%)": 100,
+             "Unlinked Passenger Trips": 600},
             {"NTD ID": "Agency A", "UACE Code": "foo", "Mode": "RB",
-                "Electric (km)": 3000, "Electric (Wh/km)": 2000, "All Fuels (km)": 3000,
-                "Passenger km": 15000, "Vehicle km": 3750, "Average Passengers": 4},
+             "Electric (Wh/pkm)": 500, "Electric (%)": 100,
+             "Unlinked Passenger Trips": 150},
             {"NTD ID": "Agency B", "UACE Code": "foo", "Mode": "MB",
-                "Diesel (km)": 3200, "Diesel (Wh/km)": 2000,
-                "Electric (km)": 800, "Electric (Wh/km)": 1500, "All Fuels (km)": 4000,
-                "Passenger km": 25000, "Vehicle km": 5000, "Average Passengers": 5},
+             "Diesel (Wh/pkm)": 400, "Diesel (%)": 80,
+             "Electric (Wh/pkm)": 300, "Electric (%)": 20,
+             "Unlinked Passenger Trips": 250}
         ])
         [intensities, metadata] = emcmft.get_intensities(2022, 'foo', BUS_MODES)
         self.assertDictEqual(intensities, {
