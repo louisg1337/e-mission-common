@@ -1,5 +1,7 @@
 import json
+import emcommon.metrics.footprint.util as util
 from emcommon.metrics.footprint.louis_ntd_data_by_year import ntd_data
+from emcommon.metrics.footprint.footprint_calculations import get_uace_by_zipcode
 
 DIESEL_GGE = 1.136 # from energy.gov
 KWH_PER_GALLON_GASOLINE = 33.7 # from the EPA, used as the basis for MPGe
@@ -22,8 +24,12 @@ fuel_types = {
 }
 
 def get_intensities_for_trip(trip, modes):
-    year = trip["year"]
-    code = trip["code"]
+    year = util.year_of_trip(trip)
+    uace_code = get_uace_by_zipcode(trip["start_confirmed_place"]["zipcode"], year)
+    return get_intensities(year, uace_code, modes)
+
+def get_intensities(year, uace, modes):
+    code = uace
 
     aggregate_agencies = []
     total_passenger_trips = 0
@@ -141,4 +147,4 @@ trip = {
     "code": "16264"
 }
 modes = ["LR", "HR", "YR", "CR"]
-get_intensities_for_trip(trip, modes)
+get_intensities("2022", "16264", modes)
