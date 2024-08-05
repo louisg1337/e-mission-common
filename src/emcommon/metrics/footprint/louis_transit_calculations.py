@@ -1,7 +1,8 @@
 import json
+import copy
 import emcommon.metrics.footprint.util as util
-from emcommon.metrics.footprint.louis_ntd_data_by_year import ntd_data
-from emcommon.metrics.footprint.footprint_calculations import get_uace_by_zipcode
+from emcommon.metrics.footprint.louis_ntd_data_by_year import ntd_data as _ntd_data
+# from emcommon.metrics.footprint.footprint_calculations import get_uace_by_zipcode
 
 DIESEL_GGE = 1.136 # from energy.gov
 KWH_PER_GALLON_GASOLINE = 33.7 # from the EPA, used as the basis for MPGe
@@ -29,6 +30,8 @@ def get_intensities_for_trip(trip, modes):
     return get_intensities(year, uace_code, modes)
 
 def get_intensities(year, uace, modes):
+    ntd_data = copy.deepcopy(_ntd_data)
+    year = str(year)
     code = uace
 
     aggregate_agencies = []
@@ -113,9 +116,8 @@ def get_intensities(year, uace, modes):
         'wh_per_km': overall,
         'weight': 1.0
     }
+    return result
     
-    print(json.dumps(result, indent=4))
-
 def calculate_wh_per_pkm(agency, fuel_type):
     fuel = agency[fuel_type]
     # Convert to km
