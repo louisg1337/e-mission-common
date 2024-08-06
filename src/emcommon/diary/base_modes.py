@@ -175,7 +175,7 @@ BASE_MODES = {
       "icon": 'train-car-passenger',
       "color": mode_colors['periwinkle'],
       "met": NON_ACTIVE_METS,
-      "footprint": { "transit": ["HR", "YR"] } # heavy rail, hybrid rail
+      "footprint": { "transit": ["LR", "HR", "YR", "CR"] } # light rail, heavy rail, hybrid rail, commuter rail
   },
   "TRAM": {
       "icon": 'tram',
