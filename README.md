@@ -13,7 +13,7 @@ pip install transcrypt
 ## To contribute
 
 1. Make your changes to Python code under the `src` directory.
-2. Run `. ./bin/compile_to_js.sh` to build the JavaScript. This will produce output JS files in the `emcommon_js` directory.
+2. Run `bash ./bin/compile_to_js.sh` to build the JavaScript. This will produce output JS files in the `emcommon_js` directory.
 3. Commit your changes from both the `src` and `emcommon_js` directories.
 
 ## Tips for writing code to work in both Python and JavaScript

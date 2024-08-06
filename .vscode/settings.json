@@ -6,7 +6,8 @@
     "editor.tabSize": 4,
   },
   "[javascript]": {
-    "editor.defaultFormatter": "esbenp.prettier-vscode"
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.tabSize": 2,
   },
   "autopep8.args": ["--max-line-length", "100"],
   "python.testing.unittestArgs": [
@@ -18,4 +19,5 @@
   ],
   "python.testing.pytestEnabled": false,
   "python.testing.unittestEnabled": true,
+  "files.insertFinalNewline": true,
 }
