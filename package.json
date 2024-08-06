@@ -15,6 +15,16 @@
     "testEnvironment": "jsdom",
     "transform": {}
   },
+  "prettier": {
+    "printWidth": 100,
+    "tabWidth": 2,
+    "singleQuote": true,
+    "trailingComma": "all",
+    "bracketSpacing": true,
+    "bracketSameLine": true,
+    "endOfLine": "lf",
+    "semi": true
+  },
   "devDependencies": {
     "@types/jest": "^29.5.12",
     "jest": "^29.7.0",
