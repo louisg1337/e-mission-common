@@ -1,9 +1,9 @@
-// Transcrypt'ed from Python, 2024-08-02 08:25:08
-import {AssertionError, AttributeError, BaseException, DeprecationWarning, Exception, IndexError, IterableError, KeyError, NotImplementedError, RuntimeWarning, StopIteration, UserWarning, ValueError, Warning, __JsIterator__, __PyIterator__, __Terminal__, __add__, __and__, __call__, __class__, __envir__, __eq__, __floordiv__, __ge__, __get__, __getcm__, __getitem__, __getslice__, __getsm__, __gt__, __i__, __iadd__, __iand__, __idiv__, __ijsmod__, __ilshift__, __imatmul__, __imod__, __imul__, __in__, __init__, __ior__, __ipow__, __irshift__, __isub__, __ixor__, __jsUsePyNext__, __jsmod__, __k__, __kwargtrans__, __le__, __lshift__, __lt__, __matmul__, __mergefields__, __mergekwargtrans__, __mod__, __mul__, __ne__, __neg__, __nest__, __or__, __pow__, __pragma__, __pyUseJsNext__, __rshift__, __setitem__, __setproperty__, __setslice__, __sort__, __specialattrib__, __sub__, __super__, __t__, __terminal__, __truediv__, __withblock__, __xor__, abs, all, any, assert, bin, bool, bytearray, bytes, callable, chr, copy, deepcopy, delattr, dict, dir, divmod, enumerate, filter, float, getattr, hasattr, hex, input, int, isinstance, issubclass, len, list, map, max, min, object, oct, ord, pow, print, property, py_TypeError, py_iter, py_metatype, py_next, py_reversed, py_typeof, range, repr, round, set, setattr, sorted, str, sum, tuple, zip} from './org.transcrypt.__runtime__.js';
+// Transcrypt'ed from Python, 2024-08-06 23:57:25
+import {AssertionError, AttributeError, BaseException, DeprecationWarning, Exception, IndexError, IterableError, KeyError, NotImplementedError, RuntimeWarning, StopIteration, UserWarning, ValueError, Warning, __JsIterator__, __PyIterator__, __Terminal__, __add__, __and__, __call__, __class__, __envir__, __eq__, __floordiv__, __ge__, __get__, __getcm__, __getitem__, __getslice__, __getsm__, __gt__, __i__, __iadd__, __iand__, __idiv__, __ijsmod__, __ilshift__, __imatmul__, __imod__, __imul__, __in__, __init__, __ior__, __ipow__, __irshift__, __isub__, __ixor__, __jsUsePyNext__, __jsmod__, __k__, __kwargtrans__, __le__, __lshift__, __lt__, __matmul__, __mergefields__, __mergekwargtrans__, __mod__, __mul__, __ne__, __neg__, __nest__, __or__, __pow__, __pragma__, __pyUseJsNext__, __rshift__, __setitem__, __setproperty__, __setslice__, __sort__, __specialattrib__, __sub__, __super__, __t__, __terminal__, __truediv__, __withblock__, __xor__, _copy, _sort, abs, all, any, assert, bin, bool, bytearray, bytes, callable, chr, delattr, dict, dir, divmod, enumerate, filter, float, getattr, hasattr, hex, input, int, isinstance, issubclass, len, list, map, max, min, object, oct, ord, pow, print, property, py_TypeError, py_iter, py_metatype, py_next, py_reversed, py_typeof, range, repr, round, set, setattr, sorted, str, sum, tuple, zip} from './org.transcrypt.__runtime__.js';
 import {ntd_data, uace_zip_maps} from './emcommon.metrics.footprint.ntd_data_by_year.js';
 import * as util from './emcommon.metrics.footprint.util.js';
 import * as Logger from './emcommon.logger.js';
-export {uace_zip_maps, Logger, util, ntd_data};
+export {Logger, ntd_data, util, uace_zip_maps};
 var __name__ = 'emcommon.metrics.footprint.transit_calculations';
 export var fuel_types = ['Gasoline', 'Diesel', 'LPG', 'CNG', 'Hydrogen', 'Electric', 'Other'];
 export var weighted_mean = function (py_values, weights) {
@@ -48,32 +48,25 @@ export var get_intensities = function (year, uace, modes) {
 		metadata ['year'] = year_str;
 		Logger.log_warn ('NTD data not available for year {}; using closest available year {}'.format (year, year_str));
 	}
+	var total_upt = 0;
 	var agency_mode_fueltypes = [];
 	for (var entry of ntd_data [year_str]) {
 		if (modes && !__in__ (entry ['Mode'], modes) || uace && entry ['UACE Code'] != uace) {
 			continue;
 		}
-		var pkm = entry ['Passenger km'];
-		var all_fuels_km = entry ['All Fuels (km)'];
-		var average_passengers = entry ['Average Passengers'];
+		var upt = entry ['Unlinked Passenger Trips'];
+		total_upt += upt;
 		for (var fuel_type of fuel_types) {
-			var km_value = entry.py_get ('{} (km)'.format (fuel_type), 0);
-			var wh_per_km_value = entry.py_get ('{} (Wh/km)'.format (fuel_type), 0);
-			if (km_value && wh_per_km_value) {
-				agency_mode_fueltypes.append (dict ({'fuel_type': fuel_type, 'pkm': (km_value / all_fuels_km) * pkm, 'wh_per_km': wh_per_km_value / average_passengers}));
+			var fuel_pct = entry.py_get ('{} (%)'.format (fuel_type), 0);
+			var wh_per_pkm = entry.py_get ('{} (Wh/pkm)'.format (fuel_type), 0);
+			if (fuel_pct && wh_per_pkm) {
+				agency_mode_fueltypes.append (dict ({'fuel_type': fuel_type, 'upt': (fuel_pct / 100) * upt, 'wh_per_km': wh_per_pkm}));
 				if (!__in__ (entry ['NTD ID'], metadata ['ntd_ids'])) {
 					metadata ['ntd_ids'].append (entry ['NTD ID']);
 				}
 			}
 		}
 	}
-	var total_pkm = sum ((function () {
-		var __accu0__ = [];
-		for (var entry of agency_mode_fueltypes) {
-			__accu0__.append (entry ['pkm']);
-		}
-		return __accu0__;
-	}) ());
 	if (!(agency_mode_fueltypes)) {
 		Logger.log_info ('Insufficient data for year {} and UACE {} and modes {}'.format (year, uace, modes));
 		if (uace) {
@@ -88,7 +81,7 @@ export var get_intensities = function (year, uace, modes) {
 		return tuple ([null, metadata]);
 	}
 	for (var entry of agency_mode_fueltypes) {
-		entry ['weight'] = entry ['pkm'] / total_pkm;
+		entry ['weight'] = entry ['upt'] / total_upt;
 	}
 	Logger.log_debug ('agency_mode_fueltypes = {}'.format (agency_mode_fueltypes).__getslice__ (0, 500, 1));
 	for (var fuel_type of fuel_types) {
