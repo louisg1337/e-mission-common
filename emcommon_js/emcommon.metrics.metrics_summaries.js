@@ -4,7 +4,7 @@ import * as emcsc from './emcommon.survey.conditional_surveys.js';
 import * as emcble from './emcommon.bluetooth.ble_matching.js';
 import * as util from './emcommon.util.js';
 import * as Logger from './emcommon.logger.js';
-export {emcsc, emcble, Logger, util};
+export {Logger, emcsc, emcble, util};
 var __name__ = 'emcommon.metrics.metrics_summaries';
 export var app_config = null;
 export var labels_map = null;

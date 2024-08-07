@@ -4,7 +4,7 @@ export var __envir__ = {};
 __envir__.interpreter_name = 'python';
 __envir__.transpiler_name = 'transcrypt';
 __envir__.executor_name = __envir__.transpiler_name;
-__envir__.transpiler_version = '3.9.2';
+__envir__.transpiler_version = '3.9.3';
 
 export function __nest__ (headObject, tailNames, value) {
     var current = headObject;
@@ -488,12 +488,36 @@ export function chr (charCode) {
 export function ord (aChar) {
     return aChar.charCodeAt (0);
 };
-export function max (nrOrSeq) {
-    return arguments.length == 1 ? Math.max (...nrOrSeq) : Math.max (...arguments);
-};
-export function min (nrOrSeq) {
-    return arguments.length == 1 ? Math.min (...nrOrSeq) : Math.min (...arguments);
-};
+function min_max (f_compare, ...args) {
+    let dflt = undefined;
+    function key(x) {return x}
+    if (args.length > 0) {
+        if (args[args.length-1] && args[args.length-1].hasOwnProperty ("__kwargtrans__")) {
+            const kwargs = args[args.length - 1];
+            args = args.slice(0, -1);
+            if (kwargs.hasOwnProperty('py_default')) dflt = kwargs['py_default'];
+            if (kwargs.hasOwnProperty('key')) key = kwargs['key'];
+            if (Object.prototype.toString.call(key) !== '[object Function]') throw TypeError("object is not callable", new Error());
+        }
+    }
+    if (args.length === 0) throw TypeError("expected at least 1 argument, got 0", new Error ());
+    if (args.length > 1 && dflt !== undefined) throw TypeError("Cannot specify a default with multiple positional arguments", new Error ());
+    if (args.length === 1){
+        if (Object.prototype.toString.call(args[0]) !== '[object Array]') throw TypeError("object is not iterable", new Error());
+        args = args[0];
+    }
+    if (args.length === 0){
+        if (dflt === undefined) throw ValueError ("arg is an empty sequence", new Error ());
+        return dflt
+    }
+    return args.reduce((max_val, cur_val) => f_compare(key(cur_val), key(max_val)) ? cur_val : max_val);
+}
+export function max (...args) {
+    return min_max(function (a, b){return a > b}, ...args)
+}
+export function min (...args) {
+    return min_max(function (a, b){return a < b}, ...args)
+}
 export function bin (nbr) {
     const sign = nbr<0 ? '-' : '';
     const bin_val = Math.abs(parseInt(nbr)).toString(2);
@@ -686,34 +710,6 @@ export function enumerate(iterable, start = 0) {
         start = start['start'];
     }
     return zip(range(start, len(iterable) + start), iterable);
-}
-export function copy (anObject) {
-    if (anObject == null || typeof anObject == "object") {
-        return anObject;
-    }
-    else {
-        var result = {};
-        for (var attrib in obj) {
-            if (anObject.hasOwnProperty (attrib)) {
-                result [attrib] = anObject [attrib];
-            }
-        }
-        return result;
-    }
-}
-export function deepcopy (anObject) {
-    if (anObject == null || typeof anObject == "object") {
-        return anObject;
-    }
-    else {
-        var result = {};
-        for (var attrib in obj) {
-            if (anObject.hasOwnProperty (attrib)) {
-                result [attrib] = deepcopy (anObject [attrib]);
-            }
-        }
-        return result;
-    }
 }
 export function list (iterable) {
     let instance = iterable ? Array.from (iterable) : [];
@@ -1968,7 +1964,7 @@ export var DeprecationWarning =  __class__ ('DeprecationWarning', [Warning], {
 export var RuntimeWarning =  __class__ ('RuntimeWarning', [Warning], {
 	__module__: __name__,
 });
-export var __sort__ = function (iterable, key, reverse) {
+export var _sort = function (iterable, key, reverse) {
 	if (typeof key == 'undefined' || (key != null && key.hasOwnProperty ("__kwargtrans__"))) {;
 		var key = null;
 	};
@@ -2010,19 +2006,31 @@ export var __sort__ = function (iterable, key, reverse) {
 		}));
 	}
 	else {
-		iterable.sort ();
+		iterable.sort ((function __lambda__ (a, b) {
+			if (arguments.length) {
+				var __ilastarg0__ = arguments.length - 1;
+				if (arguments [__ilastarg0__] && arguments [__ilastarg0__].hasOwnProperty ("__kwargtrans__")) {
+					var __allkwargs0__ = arguments [__ilastarg0__--];
+					for (var __attrib0__ in __allkwargs0__) {
+						switch (__attrib0__) {
+							case 'a': var a = __allkwargs0__ [__attrib0__]; break;
+							case 'b': var b = __allkwargs0__ [__attrib0__]; break;
+						}
+					}
+				}
+			}
+			else {
+			}
+			return (a > b ? 1 : -(1));
+		}));
 	}
 	if (reverse) {
 		iterable.reverse ();
 	}
 };
-export var sorted = function (iterable, key, reverse) {
-	if (typeof key == 'undefined' || (key != null && key.hasOwnProperty ("__kwargtrans__"))) {;
-		var key = null;
-	};
-	if (typeof reverse == 'undefined' || (reverse != null && reverse.hasOwnProperty ("__kwargtrans__"))) {;
-		var reverse = false;
-	};
+export var sorted = function (iterable) {
+	var key = null;
+	var reverse = false;
 	if (arguments.length) {
 		var __ilastarg0__ = arguments.length - 1;
 		if (arguments [__ilastarg0__] && arguments [__ilastarg0__].hasOwnProperty ("__kwargtrans__")) {
@@ -2039,19 +2047,40 @@ export var sorted = function (iterable, key, reverse) {
 	else {
 	}
 	if (py_typeof (iterable) == dict) {
-		var result = copy (iterable.py_keys ());
+		var result = _copy (iterable.py_keys ());
 	}
 	else {
-		var result = copy (iterable);
+		var result = _copy (iterable);
 	}
-	__sort__ (result, key, reverse);
+	_sort (result, key, reverse);
 	return result;
 };
-export var map = function (func, iterable) {
+export var __sort__ = function (iterable) {
+	var key = null;
+	var reverse = false;
+	if (arguments.length) {
+		var __ilastarg0__ = arguments.length - 1;
+		if (arguments [__ilastarg0__] && arguments [__ilastarg0__].hasOwnProperty ("__kwargtrans__")) {
+			var __allkwargs0__ = arguments [__ilastarg0__--];
+			for (var __attrib0__ in __allkwargs0__) {
+				switch (__attrib0__) {
+					case 'iterable': var iterable = __allkwargs0__ [__attrib0__]; break;
+					case 'key': var key = __allkwargs0__ [__attrib0__]; break;
+					case 'reverse': var reverse = __allkwargs0__ [__attrib0__]; break;
+				}
+			}
+		}
+	}
+	else {
+	}
+	_sort (iterable, key, reverse);
+};
+export var map = function (func) {
+	var iterables = tuple ([].slice.apply (arguments).slice (1));
 	return (function () {
 		var __accu0__ = [];
-		for (var item of iterable) {
-			__accu0__.append (func (item));
+		for (var py_items of zip (...iterables)) {
+			__accu0__.append (func (...py_items));
 		}
 		return __accu0__;
 	}) ();
