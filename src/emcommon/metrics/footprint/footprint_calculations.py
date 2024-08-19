@@ -10,7 +10,7 @@ import emcommon.metrics.footprint.transit_calculations as transit
 import emcommon.metrics.footprint.util as util
 
 # __pragma__('jsiter')
-def get_egrid_carbon_intensity(year: int, zipcode: str) -> float:
+def get_egrid_carbon_intensity(year: int, zipcode: str|None = None) -> float:
   """
   Returns the estimated carbon intensity of the electricity grid in the given zip code for the given year.
   (units in kg CO2e per MWh)
@@ -32,14 +32,21 @@ def get_egrid_carbon_intensity(year: int, zipcode: str) -> float:
       Logger.log_warn(f"eGRID data not available for year {metadata['requested_year']}; "
                     + f"Using closest available year {metadata['year']}")
   egrid_data_for_year = egrid_data[str(year)]
-  for r in egrid_data_for_year['regions_zips']:
-    if zipcode in egrid_data_for_year['regions_zips'][r]:
-      metadata['egrid_region'] = r
-      break
+  if zipcode is not None:
+    for r in egrid_data_for_year['regions_zips']:
+      if zipcode in egrid_data_for_year['regions_zips'][r]:
+        metadata['egrid_region'] = r
+        break
   if metadata['egrid_region'] is None:
-      Logger.log_error(f"eGRID region not found for zipcode {zipcode} in year {year}")
+    if zipcode:
+      Logger.log_warn(f"eGRID region not found for zipcode {zipcode} in year {year}. Using national average.")
+    else:
+      Logger.log_debug(f"zipcode not given for eGRID lookup in year {year}. Using national average.")
+      # use national average
+      kg_per_kwh = egrid_data_for_year['national_kg_per_mwh']
       return None
-  kg_per_kwh = egrid_data_for_year['regions_src2erta'][metadata['egrid_region']]
+  else:
+    kg_per_kwh = egrid_data_for_year['regions_kg_per_mwh'][metadata['egrid_region']]
   return (kg_per_kwh, metadata)
 # __pragma__('nojsiter')
 
