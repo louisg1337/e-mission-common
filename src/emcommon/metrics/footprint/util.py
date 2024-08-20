@@ -42,3 +42,33 @@ def find_closest_available_year(year, available_years: list) -> int:
     available_years = [int(y) for y in available_years]
     diffs = [abs(y - year) for y in available_years]
     return available_years[diffs.index(min(diffs))]
+
+
+# raytracing algorithm
+def is_point_inside_polygon(pt, vs):
+    x, y = pt
+    inside = False
+    j = len(vs) - 1
+    for i in range(len(vs)):
+        xi, yi = vs[i]
+        xj, yj = vs[j]
+        intersect = ((yi > y) != (yj > y)) and (x < (xj - xi) * (y - yi) / (yj - yi) + xi)
+        if intersect:
+            inside = not inside
+        j = i
+    return inside
+
+
+def get_feature_containing_point(pt, geojson):
+    """
+    Find the first feature in the given GeoJSON that contains the given point.
+    """
+    for feature in geojson['features']:
+        if feature['geometry']['type'] == 'Polygon':
+            polys = [feature['geometry']['coordinates']]
+        elif feature['geometry']['type'] == 'MultiPolygon':
+            polys = feature['geometry']['coordinates']
+        for poly in polys:
+            if is_point_inside_polygon(pt, poly[0]):
+                return feature
+    return None

@@ -10,19 +10,20 @@ import emcommon.metrics.footprint.transit_calculations as transit
 import emcommon.metrics.footprint.util as util
 
 # __pragma__('jsiter')
-def get_egrid_carbon_intensity(year: int, zipcode: str|None = None) -> float:
+def get_egrid_carbon_intensity(year: int, coords: list[float, float] | None = None) -> float:
   """
-  Returns the estimated carbon intensity of the electricity grid in the given zip code for the given year.
-  (units in kg CO2e per MWh)
-  :param year: The year to get the data for, e.g. 2022
-  :param zipcode: The 5-digit zip code to get the data for; e.g. "45221" (Cincinnati), "02115" (Boston)
+  Returns the estimated carbon intensity of the electricity grid at the given coordinates for the
+  given year (units in kg CO2e per MWh).
+
+  :param year: The year as int, e.g. 2022
+  :param coords: The coordinates as [lon, lat], e.g. [-84.52, 39.13]
   """
   metadata = {
     "source": "eGRID",
     "is_provisional": False,
     "year": year,
     "requested_year": year,
-    "zipcode": zipcode,
+    "coords": coords,
     "egrid_region": None,
   }
   if str(year) not in egrid_data:
@@ -32,16 +33,15 @@ def get_egrid_carbon_intensity(year: int, zipcode: str|None = None) -> float:
       Logger.log_warn(f"eGRID data not available for year {metadata['requested_year']}; "
                     + f"Using closest available year {metadata['year']}")
   egrid_data_for_year = egrid_data[str(year)]
-  if zipcode is not None:
-    for r in egrid_data_for_year['regions_zips']:
-      if zipcode in egrid_data_for_year['regions_zips'][r]:
-        metadata['egrid_region'] = r
-        break
+  if coords is not None:
+    region_feature = util.get_feature_containing_point(coords, egrid_regions[year])
+    if region_feature is not None:
+      metadata['egrid_region'] = region_feature['properties']['Name']
   if metadata['egrid_region'] is None:
-    if zipcode:
-      Logger.log_warn(f"eGRID region not found for zipcode {zipcode} in year {year}. Using national average.")
+    if coords is not None:
+      Logger.log_warn(f"eGRID region not found for coords {coords} in year {year}. Using national average.")
     else:
-      Logger.log_debug(f"zipcode not given for eGRID lookup in year {year}. Using national average.")
+      Logger.log_debug(f"Coords not given for eGRID lookup in year {year}. Using national average.")
       # use national average
       kg_per_kwh = egrid_data_for_year['national_kg_per_mwh']
       return None
@@ -74,8 +74,8 @@ def calc_footprint_for_trip(trip, mode_label_option):
     elif fuel_type == 'electric':
       Logger.log_debug('Using eGRID carbon intensity for electric')
       year = util.year_of_trip(trip)
-      zipcode = trip['start_confirmed_place']['zipcode'] # TODO
-      [kg_per_kwh, metadata] = get_egrid_carbon_intensity(year, zipcode)
+      coords = trip['start_loc']['coordinates']
+      [kg_per_kwh, metadata] = get_egrid_carbon_intensity(year, coords)
       kg_co2 = kwh * kg_per_kwh
     else:
       Logger.log_warn('Unknown fuel type: ' + fuel_type)
