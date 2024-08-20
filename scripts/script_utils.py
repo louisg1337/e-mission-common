@@ -1,5 +1,8 @@
 import json
 import pandas as pd
+from zipfile import ZipFile
+from io import BytesIO
+from urllib.request import urlopen
 
 
 def is_up_to_date(output_filename, urls):
