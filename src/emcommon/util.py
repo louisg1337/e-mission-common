@@ -45,3 +45,19 @@ def flatten_db_entry(entry: dict) -> dict:
         'origin_key': entry['metadata']['origin_key'] if 'origin_key' in entry['metadata'] else None
     }
     # __pragma__('noskip')
+
+
+def read_json_resource(filename: str) -> dict:
+    """
+    Read a JSON file from '/resources' and return the contents as a dict
+    """
+
+    '''?
+    return require(f"emcommon/resources/{filename}")
+    ?'''
+
+    # __pragma__('skip')
+    import json
+    with open(f"./src/emcommon/resources/{filename}") as f:
+        return json.load(f)
+    # __pragma__('noskip')

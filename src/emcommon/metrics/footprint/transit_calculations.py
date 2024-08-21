@@ -5,7 +5,6 @@ modes in a given year and area code.
 
 import emcommon.logger as Logger
 import emcommon.metrics.footprint.util as util
-from emcommon.metrics.footprint.ntd_data_by_year import ntd_data, uace_zip_maps
 
 fuel_types = ['Gasoline', 'Diesel', 'LPG', 'CNG', 'Hydrogen', 'Electric', 'Other']
 
@@ -13,49 +12,36 @@ def weighted_mean(values, weights):
     w_sum = sum(weights)
     return sum([v * w / w_sum for v, w in zip(values, weights)])
 
-def get_uace_by_zipcode(zipcode: str, year: int) -> str:
-    year = str(year - year % 10)
-    for uace, zips in uace_zip_maps[year].items():
-        if zipcode in zips:
-            return uace
-    Logger.log_warn(f"UACE code not found for zipcode {zipcode} in year {year}")
-    return None
-
 def get_intensities_for_trip(trip, modes):
     year = util.year_of_trip(trip)
-    uace_code = get_uace_by_zipcode(trip["start_confirmed_place"]["zipcode"], year)
+    coords = trip["start_loc"]["coordinates"]
+    uace_code = util.get_uace_by_coords(coords, year)
     return get_intensities(year, uace_code, modes)
 
 def get_intensities(year: int, uace: str | None = None, modes: list[str] | None = None):
     """
     Returns estimated energy intensities by fuel type across the given modes in the urban area of the given trip.
-    :param trip: The trip to get the data for, e.g. {"year": "2022", "distance": 1000, "start_confirmed_place": {"zipcode": "45221"}}
+    :param trip: The trip to get the data for, e.g. {"year": "2022", "distance": 1000, "start_loc": {"coordinates": [-84.52, 39.13]}}
     :param modes: The NTD modes to get the data for, e.g. ["MB","CB"] (https://www.transit.dot.gov/ntd/national-transit-database-ntd-glossary)
     :returns: A dictionary of energy intensities by fuel type, with weights, e.g. {"gasoline": { "wh_per_km": 1000, "weight": 0.5 }, "diesel": { "wh_per_km": 2000, "weight": 0.5 }, "overall": { "wh_per_km": 1500, "weight": 1.0 } }
     """
     Logger.log_debug(f"Getting mode footprint for transit modes {modes} in year {year} and UACE {uace}")
-
-    intensities = {}
+    intensities_data = util.get_intensities_data(year, 'ntd')
+    actual_year = intensities_data['metadata']['year']
     metadata = {
-        "source": "NTD",
-        "is_provisional": False,
-        "year": year,
+        "data_sources": ["NTD"],
+        "data_source_urls": intensities_data['metadata']['data_source_urls'],
+        "is_provisional": actual_year != year,
+        "year": actual_year,
         "requested_year": year,
         "uace_code": uace,
         "modes": modes,
         "ntd_ids": [],
     }
 
-    year_str = str(year)
-    if (year_str not in ntd_data):
-        year_str = str(util.find_closest_available_year(year, ntd_data.keys()))
-        metadata["is_provisional"] = True
-        metadata["year"] = year_str
-        Logger.log_warn(f"NTD data not available for year {year}; using closest available year {year_str}")
-
     total_upt = 0
     agency_mode_fueltypes = []
-    for entry in ntd_data[year_str]:
+    for entry in intensities_data['records']:
         # skip entries that don't match the requested modes or UACE
         if (modes and entry["Mode"] not in modes) or (uace and entry["UACE Code"] != uace):
             continue
@@ -92,6 +78,7 @@ def get_intensities(year: int, uace: str | None = None, modes: list[str] | None 
         entry['weight'] = entry['upt'] / total_upt
     Logger.log_debug(f"agency_mode_fueltypes = {agency_mode_fueltypes}"[:500])
 
+    intensities = {}
     for fuel_type in fuel_types:
         fuel_type_entries = [entry for entry in agency_mode_fueltypes
                              if entry['fuel_type'] == fuel_type]
@@ -114,5 +101,6 @@ def get_intensities(year: int, uace: str | None = None, modes: list[str] | None 
         "weight": sum(weights)
     }
 
-    Logger.log_info(f"intensities = {intensities}; metadata = {metadata}"[:500])
+    Logger.log_info(f"intensities = {intensities}")
+    Logger.log_info(f"metadata = {metadata}"[:500])
     return (intensities, metadata)

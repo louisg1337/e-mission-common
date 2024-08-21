@@ -4,7 +4,7 @@ energy usage (kwh) and carbon emissions (kg_co2).
 """
 
 import emcommon.logger as Logger
-from emcommon.metrics.footprint.egrid_carbon_by_year import egrid_data
+import emcommon.util as emcutil
 import emcommon.diary.base_modes as emcdb
 import emcommon.metrics.footprint.transit_calculations as transit
 import emcommon.metrics.footprint.util as util
@@ -18,35 +18,31 @@ def get_egrid_carbon_intensity(year: int, coords: list[float, float] | None = No
   :param year: The year as int, e.g. 2022
   :param coords: The coordinates as [lon, lat], e.g. [-84.52, 39.13]
   """
+  Logger.log_debug(f"Getting eGRID carbon intensity for year {year} and coords {coords}")
+  intensities_data = util.get_intensities_data(year, 'egrid')
+  actual_year = intensities_data['metadata']['year']
   metadata = {
-    "source": "eGRID",
-    "is_provisional": False,
-    "year": year,
+    "data_sources": ['eGRID'],
+    "data_source_urls": intensities_data['metadata']['data_source_urls'],
+    "is_provisional": actual_year != year,
+    "year": actual_year,
     "requested_year": year,
     "coords": coords,
     "egrid_region": None,
   }
-  if str(year) not in egrid_data:
-      year = util.find_closest_available_year(year, egrid_data.keys())
-      metadata['year'] = year
-      metadata['is_provisional'] = True
-      Logger.log_warn(f"eGRID data not available for year {metadata['requested_year']}; "
-                    + f"Using closest available year {metadata['year']}")
-  egrid_data_for_year = egrid_data[str(year)]
+  
   if coords is not None:
-    region_feature = util.get_feature_containing_point(coords, egrid_regions[year])
-    if region_feature is not None:
-      metadata['egrid_region'] = region_feature['properties']['Name']
+    metadata['egrid_region'] = util.get_egrid_region(coords, actual_year)
   if metadata['egrid_region'] is None:
     if coords is not None:
       Logger.log_warn(f"eGRID region not found for coords {coords} in year {year}. Using national average.")
     else:
       Logger.log_debug(f"Coords not given for eGRID lookup in year {year}. Using national average.")
-      # use national average
-      kg_per_kwh = egrid_data_for_year['national_kg_per_mwh']
-      return None
+    # use national average
+    kg_per_kwh = intensities_data['national_kg_per_mwh']
+    return None
   else:
-    kg_per_kwh = egrid_data_for_year['regions_kg_per_mwh'][metadata['egrid_region']]
+    kg_per_kwh = intensities_data['regions_kg_per_mwh'][metadata['egrid_region']]
   return (kg_per_kwh, metadata)
 # __pragma__('nojsiter')
 
