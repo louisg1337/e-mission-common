@@ -84,12 +84,13 @@ class TestTransitCalculationsFakeData(unittest.TestCase):
         """)
 
         [intensities, metadata] = emcmft.get_intensities(9999, '99999', BUS_MODES)
-        self.assertDictEqual(intensities, {
+
+        expected_intensities = {
             "diesel": {"wh_per_km": 550, "weight": 0.8},
             "electric": {"wh_per_km": 450, "weight": 0.2},
             "overall": {"wh_per_km": 530, "weight": 1.0},
-        })
-        self.assertDictEqual(metadata, {
+        }
+        expected_metadata = {
             "data_sources": ["ntd9999"],
             "data_source_urls": ["https://fake.url", "https://fake2.url"],
             "is_provisional": False,
@@ -97,8 +98,11 @@ class TestTransitCalculationsFakeData(unittest.TestCase):
             "ntd_uace_code": "99999",
             "ntd_modes": BUS_MODES,
             "ntd_ids": ["Agency A", "Agency B"],
-        })
+        }
+        self.assertDictEqual(intensities, expected_intensities)
+        self.assertDictEqual(metadata, expected_metadata)
 
+    # delete the fake data file when we're done
     def tearDown(self):
         import os
         try:
