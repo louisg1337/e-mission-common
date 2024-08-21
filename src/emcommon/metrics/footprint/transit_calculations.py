@@ -29,13 +29,12 @@ def get_intensities(year: int, uace: str | None = None, modes: list[str] | None 
     intensities_data = util.get_intensities_data(year, 'ntd')
     actual_year = intensities_data['metadata']['year']
     metadata = {
-        "data_sources": ["NTD"],
+        "data_sources": [f"ntd{actual_year}"],
         "data_source_urls": intensities_data['metadata']['data_source_urls'],
         "is_provisional": actual_year != year,
-        "year": actual_year,
         "requested_year": year,
-        "uace_code": uace,
-        "modes": modes,
+        "ntd_uace_code": uace,
+        "ntd_modes": modes,
         "ntd_ids": [],
     }
 

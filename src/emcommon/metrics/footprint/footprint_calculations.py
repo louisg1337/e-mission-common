@@ -22,15 +22,14 @@ def get_egrid_carbon_intensity(year: int, coords: list[float, float] | None = No
   intensities_data = util.get_intensities_data(year, 'egrid')
   actual_year = intensities_data['metadata']['year']
   metadata = {
-    "data_sources": ['eGRID'],
+    "data_sources": [f"egrid{actual_year}"],
     "data_source_urls": intensities_data['metadata']['data_source_urls'],
     "is_provisional": actual_year != year,
-    "year": actual_year,
     "requested_year": year,
-    "coords": coords,
+    "egrid_coords": coords,
     "egrid_region": None,
   }
-  
+
   if coords is not None:
     metadata['egrid_region'] = util.get_egrid_region(coords, actual_year)
   if metadata['egrid_region'] is None:
@@ -47,6 +46,21 @@ def get_egrid_carbon_intensity(year: int, coords: list[float, float] | None = No
 # __pragma__('nojsiter')
 
 
+def merge_metadatas(meta_a, meta_b):
+    """
+    Merge two metadata dictionaries, where lists are concatenated and booleans are ORed.
+    """
+    for key, value in meta_b.items():
+        if key not in meta_a:
+            meta_a[key] = value
+        elif isinstance(value, list):
+            meta_a[key] = meta_a[key] + value
+        elif isinstance(value, bool):
+            meta_a[key] = meta_a[key] or value
+        else:
+            meta_a[key] = value
+
+
 def calc_footprint_for_trip(trip, mode_label_option):
   """
   Calculate the estimated footprint of a trip, which includes 'kwh' and 'kg_co2' fields.
@@ -58,7 +72,8 @@ def calc_footprint_for_trip(trip, mode_label_option):
   rich_mode = emcdb.get_rich_mode(mode_label_option)
   mode_footprint = dict(rich_mode['footprint'])
   if 'transit' in mode_footprint:
-    [mode_footprint, metadata] = transit.get_intensities_for_trip(trip, mode_footprint['transit'])
+    [mode_footprint, transit_metadata] = transit.get_intensities_for_trip(trip, mode_footprint['transit'])
+    merge_metadatas(metadata, transit_metadata)
   kwh_total = 0
   kg_co2_total = 0
   for fuel_type, fuel_type_footprint in mode_footprint.items():
@@ -71,7 +86,8 @@ def calc_footprint_for_trip(trip, mode_label_option):
       Logger.log_debug('Using eGRID carbon intensity for electric')
       year = util.year_of_trip(trip)
       coords = trip['start_loc']['coordinates']
-      [kg_per_kwh, metadata] = get_egrid_carbon_intensity(year, coords)
+      [kg_per_kwh, egrid_metadata] = get_egrid_carbon_intensity(year, coords)
+      merge_metadatas(metadata, egrid_metadata)
       kg_co2 = kwh * kg_per_kwh
     else:
       Logger.log_warn('Unknown fuel type: ' + fuel_type)
@@ -85,8 +101,8 @@ def calc_footprint_for_trip(trip, mode_label_option):
   # Other modes (car, carpool) have a flexible number of passengers. The footprints are
   # per vehicle-km. Dividing by 'passengers' gives the footprint per passenger-km.
   passengers = mode_label_option['passengers'] if 'passengers' in mode_label_option else 1
-  return {
+  footprint = {
     'kwh': kwh_total / passengers,
     'kg_co2': kg_co2_total / passengers,
-    "metadata": metadata,
   }
+  return (footprint, metadata)

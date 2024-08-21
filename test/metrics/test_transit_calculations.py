@@ -90,13 +90,12 @@ class TestTransitCalculationsFakeData(unittest.TestCase):
             "overall": {"wh_per_km": 530, "weight": 1.0},
         })
         self.assertDictEqual(metadata, {
-            "data_sources": ["NTD"],
+            "data_sources": ["ntd9999"],
             "data_source_urls": ["https://fake.url", "https://fake2.url"],
             "is_provisional": False,
-            "year": 9999,
             "requested_year": 9999,
-            "uace_code": "99999",
-            "modes": BUS_MODES,
+            "ntd_uace_code": "99999",
+            "ntd_modes": BUS_MODES,
             "ntd_ids": ["Agency A", "Agency B"],
         })
 
