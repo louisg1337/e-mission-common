@@ -1,9 +1,8 @@
 import unittest
 
+from emcommon.metrics.footprint.util import get_uace_by_coords
 import emcommon.metrics.footprint.transit_calculations as emcmft
 import emcommon.diary.base_modes as emcdb
-from emcommon.metrics.footprint.ntd_data_by_year import ntd_data
-from .test_footprint_calculations import CINCINNATI_ZIP_CODES
 
 NYC_UACE_CODE = "63217"
 CHICAGO_UACE_CODE = "16264"
@@ -13,12 +12,10 @@ TRAIN_MODES = emcdb.BASE_MODES['TRAIN']['footprint']['transit']
 
 
 class TestTransitCalculations(unittest.TestCase):
-    def test_get_uace_by_zipcode(self):
+    def test_get_uace_by_coords(self):
         cincinnati_uace_code = "16885"
-        for zipcode in CINCINNATI_ZIP_CODES:
-            print("Testing zipcode: ", zipcode)
-            result = emcmft.get_uace_by_zipcode(zipcode, 2022)
-            self.assertEqual(result, cincinnati_uace_code)
+        result = get_uace_by_coords([-84.5, 39.1], 2022)
+        self.assertEqual(result, cincinnati_uace_code)
 
     def test_bus_nyc(self):
         [intensities, metadata] = emcmft.get_intensities(2022, NYC_UACE_CODE, BUS_MODES)
@@ -32,8 +29,8 @@ class TestTransitCalculations(unittest.TestCase):
 
     def test_bus_nationwide(self):
         [intensities, metadata] = emcmft.get_intensities(2022, None, BUS_MODES)
-        self.assertAlmostEqual(intensities['overall']['wh_per_km'], 809.03, places=2)
-        self.assertEqual(len(metadata['ntd_ids']), 405)
+        self.assertAlmostEqual(intensities['overall']['wh_per_km'], 811.85, places=2)
+        self.assertEqual(len(metadata['ntd_ids']), 410)
 
     def test_train_nyc(self):
         [intensities, metadata] = emcmft.get_intensities(2022, NYC_UACE_CODE, TRAIN_MODES)
@@ -48,12 +45,12 @@ class TestTransitCalculations(unittest.TestCase):
 
     def test_train_nationwide(self):
         [intensities, metadata] = emcmft.get_intensities(2022, None, TRAIN_MODES)
-        self.assertAlmostEqual(intensities['overall']['wh_per_km'], 67.71, places=2)
-        self.assertEqual(len(metadata['ntd_ids']), 48)
+        self.assertAlmostEqual(intensities['overall']['wh_per_km'], 68.06, places=2)
+        self.assertEqual(len(metadata['ntd_ids']), 49)
 
     def test_all_modes_nationwide(self):
         [intesities, metadata] = emcmft.get_intensities(2022, None, None)
-        self.assertAlmostEqual(intesities['overall']['wh_per_km'], 485.08, places=2)
+        self.assertAlmostEqual(intesities['overall']['wh_per_km'], 486.96, places=2)
         self.assertEqual(len(metadata['ntd_ids']), 517)
 
 
@@ -63,30 +60,49 @@ class TestTransitCalculationsFakeData(unittest.TestCase):
         Example scenario from:
         https://github.com/JGreenlee/e-mission-common/pull/2#issuecomment-2263813540
         """
-        ntd_data["2022"].extend([
-            {"NTD ID": "Agency A", "UACE Code": "foo", "Mode": "MB",
-             "Diesel (Wh/pkm)": 600, "Diesel (%)": 100,
-             "Unlinked Passenger Trips": 600},
-            {"NTD ID": "Agency A", "UACE Code": "foo", "Mode": "RB",
-             "Electric (Wh/pkm)": 500, "Electric (%)": 100,
-             "Unlinked Passenger Trips": 150},
-            {"NTD ID": "Agency B", "UACE Code": "foo", "Mode": "MB",
-             "Diesel (Wh/pkm)": 400, "Diesel (%)": 80,
-             "Electric (Wh/pkm)": 300, "Electric (%)": 20,
-             "Unlinked Passenger Trips": 250}
-        ])
-        [intensities, metadata] = emcmft.get_intensities(2022, 'foo', BUS_MODES)
+
+        # Create a fake NTD data file for year 9999 and UACE code "99999"
+        open("./src/emcommon/resources/ntd9999_intensities.json", "w").write("""
+            {
+                "records": [
+                    {"NTD ID": "Agency A", "UACE Code": "99999", "Mode": "MB",
+                    "Diesel (Wh/pkm)": 600, "Diesel (%)": 100,
+                    "Unlinked Passenger Trips": 600},
+                    {"NTD ID": "Agency A", "UACE Code": "99999", "Mode": "RB",
+                    "Electric (Wh/pkm)": 500, "Electric (%)": 100,
+                    "Unlinked Passenger Trips": 150},
+                    {"NTD ID": "Agency B", "UACE Code": "99999", "Mode": "MB",
+                    "Diesel (Wh/pkm)": 400, "Diesel (%)": 80,
+                    "Electric (Wh/pkm)": 300, "Electric (%)": 20,
+                    "Unlinked Passenger Trips": 250}
+                ],
+                "metadata": {
+                    "year": 9999,
+                    "data_source_urls": ["https://fake.url", "https://fake2.url"]
+                }
+            }
+        """)
+
+        [intensities, metadata] = emcmft.get_intensities(9999, '99999', BUS_MODES)
         self.assertDictEqual(intensities, {
             "diesel": {"wh_per_km": 550, "weight": 0.8},
             "electric": {"wh_per_km": 450, "weight": 0.2},
             "overall": {"wh_per_km": 530, "weight": 1.0},
         })
         self.assertDictEqual(metadata, {
-            "source": "NTD",
+            "data_sources": ["NTD"],
+            "data_source_urls": ["https://fake.url", "https://fake2.url"],
             "is_provisional": False,
-            "year": 2022,
-            "requested_year": 2022,
-            "uace_code": "foo",
+            "year": 9999,
+            "requested_year": 9999,
+            "uace_code": "99999",
             "modes": BUS_MODES,
             "ntd_ids": ["Agency A", "Agency B"],
         })
+
+    def tearDown(self):
+        import os
+        try:
+            os.remove("./src/emcommon/resources/ntd9999_intensities.json")
+        except OSError:
+            pass
