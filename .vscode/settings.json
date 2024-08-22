@@ -2,7 +2,8 @@
   "[python]": {
     "editor.defaultFormatter": "ms-python.autopep8",
     "editor.formatOnSave": false,
-    "editor.formatOnPaste": true
+    "editor.formatOnPaste": true,
+    "editor.tabSize": 4,
   },
   "[javascript]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode",
