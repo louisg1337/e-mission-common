@@ -100,7 +100,12 @@ async def get_uace_by_coords(coords: list[float, float], year: int) -> str | Non
     census_year = year - (year % 10)  # round down to the nearest decade
     url = f"https://geocoding.geo.census.gov/geocoder/geographies/coordinates?x={coords[0]}&y={coords[1]}&benchmark=Public_AR_Current&vintage=Census{census_year}_Current&layers=87&format=json"
 
-    data = await fetch_url(url)
+    try:
+        data = await fetch_url(url)
+    except:
+        Logger.log_error(f"Failed to geocode {coords} in year {year}")
+        return None
+    
     # __pragma__('jsiter')
     for g in data['result']['geographies']:
         # __pragma__('nojsiter')

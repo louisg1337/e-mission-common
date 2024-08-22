@@ -10,7 +10,7 @@ import emcommon.metrics.footprint.transit_calculations as transit
 import emcommon.metrics.footprint.util as util
 
 # __pragma__('jsiter')
-async def get_egrid_carbon_intensity(year: int, coords: list[float, float] | None = None) -> float:
+async def get_egrid_carbon_intensity(year: int, coords: list[float, float] | None) -> tuple[float, dict]:
   """
   Returns the estimated carbon intensity of the electricity grid at the given coordinates for the
   given year (units in kg CO2e per MWh).
@@ -39,7 +39,6 @@ async def get_egrid_carbon_intensity(year: int, coords: list[float, float] | Non
       Logger.log_debug(f"Coords not given for eGRID lookup in year {year}. Using national average.")
     # use national average
     kg_per_kwh = intensities_data['national_kg_per_mwh']
-    return None
   else:
     kg_per_kwh = intensities_data['regions_kg_per_mwh'][metadata['egrid_region']]
   return (kg_per_kwh, metadata)
