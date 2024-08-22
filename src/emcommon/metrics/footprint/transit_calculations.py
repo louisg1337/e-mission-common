@@ -12,13 +12,13 @@ def weighted_mean(values, weights):
     w_sum = sum(weights)
     return sum([v * w / w_sum for v, w in zip(values, weights)])
 
-def get_intensities_for_trip(trip, modes):
+async def get_intensities_for_trip(trip, modes):
     year = util.year_of_trip(trip)
     coords = trip["start_loc"]["coordinates"]
-    uace_code = util.get_uace_by_coords(coords, year)
-    return get_intensities(year, uace_code, modes)
+    uace_code = await util.get_uace_by_coords(coords, year)
+    return await get_intensities(year, uace_code, modes)
 
-def get_intensities(year: int, uace: str | None = None, modes: list[str] | None = None):
+async def get_intensities(year: int, uace: str | None = None, modes: list[str] | None = None):
     """
     Returns estimated energy intensities by fuel type across the given modes in the urban area of the given trip.
     :param trip: The trip to get the data for, e.g. {"year": "2022", "distance": 1000, "start_loc": {"coordinates": [-84.52, 39.13]}}
@@ -26,7 +26,7 @@ def get_intensities(year: int, uace: str | None = None, modes: list[str] | None 
     :returns: A dictionary of energy intensities by fuel type, with weights, e.g. {"gasoline": { "wh_per_km": 1000, "weight": 0.5 }, "diesel": { "wh_per_km": 2000, "weight": 0.5 }, "overall": { "wh_per_km": 1500, "weight": 1.0 } }
     """
     Logger.log_debug(f"Getting mode footprint for transit modes {modes} in year {year} and UACE {uace}")
-    intensities_data = util.get_intensities_data(year, 'ntd')
+    intensities_data = await util.get_intensities_data(year, 'ntd')
     actual_year = intensities_data['metadata']['year']
     metadata = {
         "data_sources": [f"ntd{actual_year}"],
@@ -66,10 +66,10 @@ def get_intensities(year: int, uace: str | None = None, modes: list[str] | None 
         Logger.log_info(f"Insufficient data for year {year} and UACE {uace} and modes {modes}")
         if uace:
             Logger.log_info("Retrying with UACE = None")
-            return get_intensities(year, None, modes)
+            return await get_intensities(year, None, modes)
         if modes:
             Logger.log_info("Retrying with modes = None")
-            return get_intensities(year, uace, None)
+            return await get_intensities(year, uace, None)
         Logger.log_error("No data available for any UACE or modes")
         return (None, metadata)
 

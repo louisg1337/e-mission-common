@@ -1,5 +1,5 @@
 import emcommon.logger as Logger
-from emcommon.util import read_json_resource
+from emcommon.util import read_json_resource, fetch_url
 
 # https://www.epa.gov/energy/greenhouse-gases-equivalencies-calculator-calculations-and-references
 
@@ -70,19 +70,19 @@ def get_feature_containing_point(pt, geojson):
     return None
 
 
-def get_egrid_region(coords: list[float, float], year: int) -> str | None:
+async def get_egrid_region(coords: list[float, float], year: int) -> str | None:
     """
     Get the eGRID region at the given coordinates in the year.
     """
     if year < 2018:
         Logger.log_warn(f"eGRID data not available for {year}. Using 2018.")
-        return get_egrid_region(coords, 2018)
+        return await get_egrid_region(coords, 2018)
     try:
-        geojson = read_json_resource(f"egrid{year}_subregions_5pct.json")
+        geojson = await read_json_resource(f"egrid{year}_subregions_5pct.json")
     except:
         if year > 2018:
             Logger.log_warn(f"eGRID data not available for {year}. Trying {year-1}.")
-            return get_egrid_region(coords, year-1)
+            return await get_egrid_region(coords, year-1)
         Logger.log_error(f"eGRID lookup failed for {year}.")
         return None
     region_feature = get_feature_containing_point(coords, geojson)
@@ -92,49 +92,35 @@ def get_egrid_region(coords: list[float, float], year: int) -> str | None:
     return None
 
 
-def get_uace_by_coords(coords: list[float, float], year: int) -> str | None:
+async def get_uace_by_coords(coords: list[float, float], year: int) -> str | None:
     """
     Get the UACE code for the given coordinates in the given year.
     """
 
-    # JS implementation (always returns None)
-    '''?
-    return None
-    ?'''
-
-    # Python implementation (uses the Census geocoding API)
-    # __pragma__('skip')
-    import requests
-    # https: // geocoding.geo.census.gov/geocoder/geographies/coordinates?x = -84.7 & y = 39.0 & benchmark = Public_AR_Current & vintage = Census2020_Current & layers = 87 & format = json
     census_year = year - (year % 10)  # round down to the nearest decade
-    response = requests.get(
-        f"https://geocoding.geo.census.gov/geocoder/geographies/coordinates?x={coords[0]}&y={coords[1]}&benchmark=Public_AR_Current&vintage=Census{census_year}_Current&layers=87&format=json"
-    )
-    if response.status_code != 200:
-        Logger.log_error(f"Failed to get UACE for coords {coords} in year {year}: {response.text}")
-        return None
-    data = response.json()
+    url = f"https://geocoding.geo.census.gov/geocoder/geographies/coordinates?x={coords[0]}&y={coords[1]}&benchmark=Public_AR_Current&vintage=Census{census_year}_Current&layers=87&format=json"
+
+    data = await fetch_url(url)
     for g in data['result']['geographies']:
         for entry in data['result']['geographies'][g]:
             if 'UA' in entry:
                 return entry['UA']
     Logger.log_error(f"Geocoding response did not contain UA for coords {coords} in year {year}: {data}")
     return None
-    # __pragma__('noskip')
 
 
-def get_intensities_data(year: int, dataset: str) -> dict:
+async def get_intensities_data(year: int, dataset: str) -> dict:
     """
     Get the 'intensities' data for the given year from the specified dataset.
     """
     if year < 2018:
         Logger.log_warn(f"{dataset} data not available for {year}. Using 2018.")
-        return get_intensities_data(2018, dataset)
+        return await get_intensities_data(2018, dataset)
     try:
-        return read_json_resource(f"{dataset}{year}_intensities.json")
+        return await read_json_resource(f"{dataset}{year}_intensities.json")
     except:
         if year > 2018:
             Logger.log_warn(f"{dataset} data not available for {year}. Trying {year-1}.")
-            return get_intensities_data(year-1, dataset)
+            return await get_intensities_data(year-1, dataset)
         Logger.log_error(f"eGRID lookup failed for {year}.")
         return None
