@@ -1,9 +1,8 @@
-// Transcrypt'ed from Python, 2024-08-06 23:57:25
+// Transcrypt'ed from Python, 2024-08-22 03:48:37
 import {AssertionError, AttributeError, BaseException, DeprecationWarning, Exception, IndexError, IterableError, KeyError, NotImplementedError, RuntimeWarning, StopIteration, UserWarning, ValueError, Warning, __JsIterator__, __PyIterator__, __Terminal__, __add__, __and__, __call__, __class__, __envir__, __eq__, __floordiv__, __ge__, __get__, __getcm__, __getitem__, __getslice__, __getsm__, __gt__, __i__, __iadd__, __iand__, __idiv__, __ijsmod__, __ilshift__, __imatmul__, __imod__, __imul__, __in__, __init__, __ior__, __ipow__, __irshift__, __isub__, __ixor__, __jsUsePyNext__, __jsmod__, __k__, __kwargtrans__, __le__, __lshift__, __lt__, __matmul__, __mergefields__, __mergekwargtrans__, __mod__, __mul__, __ne__, __neg__, __nest__, __or__, __pow__, __pragma__, __pyUseJsNext__, __rshift__, __setitem__, __setproperty__, __setslice__, __sort__, __specialattrib__, __sub__, __super__, __t__, __terminal__, __truediv__, __withblock__, __xor__, _copy, _sort, abs, all, any, assert, bin, bool, bytearray, bytes, callable, chr, delattr, dict, dir, divmod, enumerate, filter, float, getattr, hasattr, hex, input, int, isinstance, issubclass, len, list, map, max, min, object, oct, ord, pow, print, property, py_TypeError, py_iter, py_metatype, py_next, py_reversed, py_typeof, range, repr, round, set, setattr, sorted, str, sum, tuple, zip} from './org.transcrypt.__runtime__.js';
-import {ntd_data, uace_zip_maps} from './emcommon.metrics.footprint.ntd_data_by_year.js';
 import * as util from './emcommon.metrics.footprint.util.js';
 import * as Logger from './emcommon.logger.js';
-export {Logger, ntd_data, util, uace_zip_maps};
+export {Logger, util};
 var __name__ = 'emcommon.metrics.footprint.transit_calculations';
 export var fuel_types = ['Gasoline', 'Diesel', 'LPG', 'CNG', 'Hydrogen', 'Electric', 'Other'];
 export var weighted_mean = function (py_values, weights) {
@@ -16,22 +15,13 @@ export var weighted_mean = function (py_values, weights) {
 		return __accu0__;
 	}) ());
 };
-export var get_uace_by_zipcode = function (zipcode, year) {
-	var year = str (year - __mod__ (year, 10));
-	for (var [uace, zips] of uace_zip_maps [year].py_items ()) {
-		if (__in__ (zipcode, zips)) {
-			return uace;
-		}
-	}
-	Logger.log_warn ('UACE code not found for zipcode {} in year {}'.format (zipcode, year));
-	return null;
-};
-export var get_intensities_for_trip = function (trip, modes) {
+export var get_intensities_for_trip = async function (trip, modes) {
 	var year = util.year_of_trip (trip);
-	var uace_code = get_uace_by_zipcode (trip ['start_confirmed_place'] ['zipcode'], year);
-	return get_intensities (year, uace_code, modes);
+	var coords = trip ['start_loc'] ['coordinates'];
+	var uace_code = await util.get_uace_by_coords (coords, year);
+	return await get_intensities (year, uace_code, modes);
 };
-export var get_intensities = function (year, uace, modes) {
+export var get_intensities = async function (year, uace, modes) {
 	if (typeof uace == 'undefined' || (uace != null && uace.hasOwnProperty ("__kwargtrans__"))) {;
 		var uace = null;
 	};
@@ -39,26 +29,20 @@ export var get_intensities = function (year, uace, modes) {
 		var modes = null;
 	};
 	Logger.log_debug ('Getting mode footprint for transit modes {} in year {} and UACE {}'.format (modes, year, uace));
-	var intensities = dict ({});
-	var metadata = dict ({'source': 'NTD', 'is_provisional': false, 'year': year, 'requested_year': year, 'uace_code': uace, 'modes': modes, 'ntd_ids': []});
-	var year_str = str (year);
-	if (!__in__ (year_str, ntd_data)) {
-		var year_str = str (util.find_closest_available_year (year, ntd_data.py_keys ()));
-		metadata ['is_provisional'] = true;
-		metadata ['year'] = year_str;
-		Logger.log_warn ('NTD data not available for year {}; using closest available year {}'.format (year, year_str));
-	}
+	var intensities_data = await util.get_intensities_data (year, 'ntd');
+	var actual_year = intensities_data ['metadata'] ['year'];
+	var metadata = dict ({'data_sources': ['ntd{}'.format (actual_year)], 'data_source_urls': intensities_data ['metadata'] ['data_source_urls'], 'is_provisional': actual_year != year, 'requested_year': year, 'ntd_uace_code': uace, 'ntd_modes': modes, 'ntd_ids': []});
 	var total_upt = 0;
 	var agency_mode_fueltypes = [];
-	for (var entry of ntd_data [year_str]) {
+	for (var entry of intensities_data ['records']) {
 		if (modes && !__in__ (entry ['Mode'], modes) || uace && entry ['UACE Code'] != uace) {
 			continue;
 		}
 		var upt = entry ['Unlinked Passenger Trips'];
 		total_upt += upt;
 		for (var fuel_type of fuel_types) {
-			var fuel_pct = entry.py_get ('{} (%)'.format (fuel_type), 0);
-			var wh_per_pkm = entry.py_get ('{} (Wh/pkm)'.format (fuel_type), 0);
+			var fuel_pct = (__in__ ('{} (%)'.format (fuel_type), entry) ? entry ['{} (%)'.format (fuel_type)] : 0);
+			var wh_per_pkm = (__in__ ('{} (Wh/pkm)'.format (fuel_type), entry) ? entry ['{} (Wh/pkm)'.format (fuel_type)] : 0);
 			if (fuel_pct && wh_per_pkm) {
 				agency_mode_fueltypes.append (dict ({'fuel_type': fuel_type, 'upt': (fuel_pct / 100) * upt, 'wh_per_km': wh_per_pkm}));
 				if (!__in__ (entry ['NTD ID'], metadata ['ntd_ids'])) {
@@ -71,11 +55,11 @@ export var get_intensities = function (year, uace, modes) {
 		Logger.log_info ('Insufficient data for year {} and UACE {} and modes {}'.format (year, uace, modes));
 		if (uace) {
 			Logger.log_info ('Retrying with UACE = None');
-			return get_intensities (year, null, modes);
+			return await get_intensities (year, null, modes);
 		}
 		if (modes) {
 			Logger.log_info ('Retrying with modes = None');
-			return get_intensities (year, uace, null);
+			return await get_intensities (year, uace, null);
 		}
 		Logger.log_error ('No data available for any UACE or modes');
 		return tuple ([null, metadata]);
@@ -84,6 +68,7 @@ export var get_intensities = function (year, uace, modes) {
 		entry ['weight'] = entry ['upt'] / total_upt;
 	}
 	Logger.log_debug ('agency_mode_fueltypes = {}'.format (agency_mode_fueltypes).__getslice__ (0, 500, 1));
+	var intensities = dict ({});
 	for (var fuel_type of fuel_types) {
 		var fuel_type_entries = (function () {
 			var __accu0__ = [];
@@ -130,7 +115,8 @@ export var get_intensities = function (year, uace, modes) {
 		return __accu0__;
 	}) ();
 	intensities ['overall'] = dict ({'wh_per_km': weighted_mean (wh_per_km_values, weights), 'weight': sum (weights)});
-	Logger.log_info ('intensities = {}; metadata = {}'.format (intensities, metadata).__getslice__ (0, 500, 1));
+	Logger.log_info ('intensities = {}'.format (intensities));
+	Logger.log_info ('metadata = {}'.format (metadata).__getslice__ (0, 500, 1));
 	return tuple ([intensities, metadata]);
 };
 
