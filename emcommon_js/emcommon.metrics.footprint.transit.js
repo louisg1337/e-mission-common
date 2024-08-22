@@ -1,9 +1,9 @@
-// Transcrypt'ed from Python, 2024-08-22 03:48:37
+// Transcrypt'ed from Python, 2024-08-22 14:50:48
 import {AssertionError, AttributeError, BaseException, DeprecationWarning, Exception, IndexError, IterableError, KeyError, NotImplementedError, RuntimeWarning, StopIteration, UserWarning, ValueError, Warning, __JsIterator__, __PyIterator__, __Terminal__, __add__, __and__, __call__, __class__, __envir__, __eq__, __floordiv__, __ge__, __get__, __getcm__, __getitem__, __getslice__, __getsm__, __gt__, __i__, __iadd__, __iand__, __idiv__, __ijsmod__, __ilshift__, __imatmul__, __imod__, __imul__, __in__, __init__, __ior__, __ipow__, __irshift__, __isub__, __ixor__, __jsUsePyNext__, __jsmod__, __k__, __kwargtrans__, __le__, __lshift__, __lt__, __matmul__, __mergefields__, __mergekwargtrans__, __mod__, __mul__, __ne__, __neg__, __nest__, __or__, __pow__, __pragma__, __pyUseJsNext__, __rshift__, __setitem__, __setproperty__, __setslice__, __sort__, __specialattrib__, __sub__, __super__, __t__, __terminal__, __truediv__, __withblock__, __xor__, _copy, _sort, abs, all, any, assert, bin, bool, bytearray, bytes, callable, chr, delattr, dict, dir, divmod, enumerate, filter, float, getattr, hasattr, hex, input, int, isinstance, issubclass, len, list, map, max, min, object, oct, ord, pow, print, property, py_TypeError, py_iter, py_metatype, py_next, py_reversed, py_typeof, range, repr, round, set, setattr, sorted, str, sum, tuple, zip} from './org.transcrypt.__runtime__.js';
 import * as util from './emcommon.metrics.footprint.util.js';
 import * as Logger from './emcommon.logger.js';
-export {Logger, util};
-var __name__ = 'emcommon.metrics.footprint.transit_calculations';
+export {util, Logger};
+var __name__ = 'emcommon.metrics.footprint.transit';
 export var fuel_types = ['Gasoline', 'Diesel', 'LPG', 'CNG', 'Hydrogen', 'Electric', 'Other'];
 export var weighted_mean = function (py_values, weights) {
 	var w_sum = sum (weights);
@@ -15,23 +15,35 @@ export var weighted_mean = function (py_values, weights) {
 		return __accu0__;
 	}) ());
 };
-export var get_intensities_for_trip = async function (trip, modes) {
+export var get_transit_intensities_for_trip = async function (trip, modes) {
+	Logger.log_debug ('Getting mode footprint for transit modes {} in trip: {}'.format (modes, trip));
 	var year = util.year_of_trip (trip);
 	var coords = trip ['start_loc'] ['coordinates'];
-	var uace_code = await util.get_uace_by_coords (coords, year);
-	return await get_intensities (year, uace_code, modes);
+	return await get_transit_intensities_for_coords (year, coords, modes);
 };
-export var get_intensities = async function (year, uace, modes) {
+export var get_transit_intensities_for_coords = async function (year, coords, modes, metadata) {
+	if (typeof metadata == 'undefined' || (metadata != null && metadata.hasOwnProperty ("__kwargtrans__"))) {;
+		var metadata = dict ({});
+	};
+	Logger.log_debug ('Getting mode footprint for transit modes {} in year {} and coords {}'.format (modes, year, coords));
+	metadata.py_update (dict ({'requested_coords': coords}));
+	var uace_code = await util.get_uace_by_coords (coords, year);
+	return await get_transit_intensities_for_uace (year, uace_code, modes, metadata);
+};
+export var get_transit_intensities_for_uace = async function (year, uace, modes, metadata) {
 	if (typeof uace == 'undefined' || (uace != null && uace.hasOwnProperty ("__kwargtrans__"))) {;
 		var uace = null;
 	};
 	if (typeof modes == 'undefined' || (modes != null && modes.hasOwnProperty ("__kwargtrans__"))) {;
 		var modes = null;
 	};
+	if (typeof metadata == 'undefined' || (metadata != null && metadata.hasOwnProperty ("__kwargtrans__"))) {;
+		var metadata = dict ({});
+	};
 	Logger.log_debug ('Getting mode footprint for transit modes {} in year {} and UACE {}'.format (modes, year, uace));
 	var intensities_data = await util.get_intensities_data (year, 'ntd');
 	var actual_year = intensities_data ['metadata'] ['year'];
-	var metadata = dict ({'data_sources': ['ntd{}'.format (actual_year)], 'data_source_urls': intensities_data ['metadata'] ['data_source_urls'], 'is_provisional': actual_year != year, 'requested_year': year, 'ntd_uace_code': uace, 'ntd_modes': modes, 'ntd_ids': []});
+	metadata.py_update (dict ({'data_sources': ['ntd{}'.format (actual_year)], 'data_source_urls': intensities_data ['metadata'] ['data_source_urls'], 'is_provisional': actual_year != year, 'requested_year': year, 'ntd_uace_code': uace, 'ntd_modes': modes, 'ntd_ids': []}));
 	var total_upt = 0;
 	var agency_mode_fueltypes = [];
 	for (var entry of intensities_data ['records']) {
@@ -55,11 +67,11 @@ export var get_intensities = async function (year, uace, modes) {
 		Logger.log_info ('Insufficient data for year {} and UACE {} and modes {}'.format (year, uace, modes));
 		if (uace) {
 			Logger.log_info ('Retrying with UACE = None');
-			return await get_intensities (year, null, modes);
+			return await get_transit_intensities_for_uace (year, null, modes);
 		}
 		if (modes) {
 			Logger.log_info ('Retrying with modes = None');
-			return await get_intensities (year, uace, null);
+			return await get_transit_intensities_for_uace (year, uace, null);
 		}
 		Logger.log_error ('No data available for any UACE or modes');
 		return tuple ([null, metadata]);
@@ -120,4 +132,4 @@ export var get_intensities = async function (year, uace, modes) {
 	return tuple ([intensities, metadata]);
 };
 
-//# sourceMappingURL=emcommon.metrics.footprint.transit_calculations.map
+//# sourceMappingURL=emcommon.metrics.footprint.transit.map

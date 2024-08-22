@@ -15,8 +15,8 @@ export function get_feature_containing_point(pt: any, geojson: any): any;
 export function get_egrid_region(coords: any, year: any): any;
 export function get_uace_by_coords(coords: any, year: any): Promise<any>;
 export function get_intensities_data(year: any, dataset: any): any;
+import * as Logger from './emcommon.logger.js';
 import { fetch_url } from './emcommon.util.js';
 import { read_json_resource } from './emcommon.util.js';
-import * as Logger from './emcommon.logger.js';
-export { fetch_url, read_json_resource, Logger };
+export { Logger, fetch_url, read_json_resource };
 //# sourceMappingURL=emcommon.metrics.footprint.util.d.ts.map

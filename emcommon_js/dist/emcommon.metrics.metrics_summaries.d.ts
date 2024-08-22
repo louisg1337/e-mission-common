@@ -7,9 +7,9 @@ export function value_of_metric_for_trip(metric_name: any, grouping_field: any, 
 export function get_summary_for_metric(metric: any, confirmed_trips: any): any[];
 export const grouping_field_fns: {};
 export function metric_summary_for_trips(metric: any, confirmed_trips: any): {};
-import * as Logger from './emcommon.logger.js';
 import * as util from './emcommon.util.js';
-import * as emcble from './emcommon.bluetooth.ble_matching.js';
 import * as emcsc from './emcommon.survey.conditional_surveys.js';
-export { Logger, util, emcble, emcsc };
+import * as emcble from './emcommon.bluetooth.ble_matching.js';
+import * as Logger from './emcommon.logger.js';
+export { util, emcsc, emcble, Logger };
 //# sourceMappingURL=emcommon.metrics.metrics_summaries.d.ts.map

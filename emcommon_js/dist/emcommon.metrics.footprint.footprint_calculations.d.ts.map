@@ -1,1 +1,1 @@
-{"version":3,"file":"emcommon.metrics.footprint.footprint_calculations.d.ts","sourceRoot":"","sources":["../emcommon.metrics.footprint.footprint_calculations.js"],"names":[],"mappings":"AASO,iFAyBN;AACM,gEAmBN;AACM,yFAyCN;sBA9FqB,sCAAsC;uBAErC,gCAAgC;wBAE/B,sBAAsB;yBADrB,oBAAoB;yBAFpB,sDAAsD"}
+{"version":3,"file":"emcommon.metrics.footprint.footprint_calculations.d.ts","sourceRoot":"","sources":["../emcommon.metrics.footprint.footprint_calculations.js"],"names":[],"mappings":"AASO,gEAmBN;AACM,yFAuCN;wBAlEuB,sCAAsC;wBACtC,yCAAyC;uBAE1C,gCAAgC;wBAD/B,uCAAuC;wBAEvC,sBAAsB"}
