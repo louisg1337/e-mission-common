@@ -1,7 +1,7 @@
 import fs from 'fs';
 
 import { get_uace_by_coords } from '../../emcommon_js/emcommon.metrics.footprint.util';
-import * as emcft from '../../emcommon_js/emcommon.metrics.footprint.transit_calculations';
+import * as emcft from '../../emcommon_js/emcommon.metrics.footprint.transit';
 import * as emcdb from '../../emcommon_js/emcommon.diary.base_modes';
 
 
@@ -12,7 +12,7 @@ const BUS_MODES = emcdb.BASE_MODES['BUS']['footprint']['transit'];
 const TRAIN_MODES = emcdb.BASE_MODES['TRAIN']['footprint']['transit'];
 
 
-describe('TestTransitCalculations', () => {
+describe('TestTransit', () => {
   it('test_get_uace_by_zipcode', async () => {
     const cincinnati_uace_code = '16885';
     const result = await get_uace_by_coords([-84.5, 39.1], 2022);

@@ -1,7 +1,7 @@
 import unittest
 
-from emcommon.metrics.footprint.util import get_uace_by_coords
-import emcommon.metrics.footprint.transit_calculations as emcmft
+import emcommon.metrics.footprint.util as emcmfu
+import emcommon.metrics.footprint.transit as emcmft
 import emcommon.diary.base_modes as emcdb
 
 NYC_UACE_CODE = "63217"
@@ -11,10 +11,10 @@ BUS_MODES = emcdb.BASE_MODES['BUS']['footprint']['transit']
 TRAIN_MODES = emcdb.BASE_MODES['TRAIN']['footprint']['transit']
 
 
-class TestTransitCalculations(unittest.IsolatedAsyncioTestCase):
+class TestTransit(unittest.IsolatedAsyncioTestCase):
     async def test_get_uace_by_coords(self):
         cincinnati_uace_code = "16885"
-        result = await get_uace_by_coords([-84.5, 39.1], 2022)
+        result = await emcmfu.get_uace_by_coords([-84.5, 39.1], 2022)
         self.assertEqual(result, cincinnati_uace_code)
 
     async def test_bus_nyc(self):

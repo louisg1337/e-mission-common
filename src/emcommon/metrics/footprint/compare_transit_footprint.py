@@ -1,4 +1,4 @@
-import emcommon.metrics.footprint.transit_calculations as jack_transit_calculations
+import emcommon.metrics.footprint.transit as jack_transit_calculations
 import emcommon.metrics.footprint.louis_transit_calculations as louis_transit_calculations
 from emcommon.diary.base_modes import BASE_MODES
 
