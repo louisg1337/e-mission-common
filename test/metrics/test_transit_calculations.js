@@ -20,43 +20,43 @@ describe('TestTransitCalculations', () => {
   });
 
   it('test_bus_nyc', async () => {
-    const [intensities, metadata] = await emcft.get_intensities(2022, NYC_UACE_CODE, BUS_MODES);
+    const [intensities, metadata] = await emcft.get_transit_intensities_for_uace(2022, NYC_UACE_CODE, BUS_MODES);
     expect(intensities['overall']['wh_per_km']).toBeCloseTo(646.80, 2);
     expect(metadata['ntd_ids'].length).toEqual(22);
   });
   
   it('test_bus_chicago', async () => {
-    const [intensities, metadata] = await emcft.get_intensities(2022, CHICAGO_UACE_CODE, BUS_MODES);
+    const [intensities, metadata] = await emcft.get_transit_intensities_for_uace(2022, CHICAGO_UACE_CODE, BUS_MODES);
     expect(intensities['overall']['wh_per_km']).toBeCloseTo(1048.12, 2);
     expect(metadata['ntd_ids'].length).toEqual(2);
   });
 
   it('test_bus_nationwide', async () => {
-    const [intensities, metadata] = await emcft.get_intensities(2022, null, BUS_MODES);
+    const [intensities, metadata] = await emcft.get_transit_intensities_for_uace(2022, null, BUS_MODES);
     expect(intensities['overall']['wh_per_km']).toBeCloseTo(811.85, 2);
     expect(metadata['ntd_ids'].length).toEqual(410);
   });
 
   it('test_train_nyc', async () => {
-    const [intensities, metadata] = await emcft.get_intensities(2022, NYC_UACE_CODE, TRAIN_MODES);
+    const [intensities, metadata] = await emcft.get_transit_intensities_for_uace(2022, NYC_UACE_CODE, TRAIN_MODES);
     expect(intensities['overall']['wh_per_km']).toBeCloseTo(24.79, 2);
     expect(metadata['ntd_ids'].length).toEqual(6);
   });
 
   it('test_train_chicago', async () => {
-    const [intensities, metadata] = await emcft.get_intensities(2022, CHICAGO_UACE_CODE, TRAIN_MODES);
+    const [intensities, metadata] = await emcft.get_transit_intensities_for_uace(2022, CHICAGO_UACE_CODE, TRAIN_MODES);
     expect(intensities['overall']['wh_per_km']).toBeCloseTo(159.04, 2);
     expect(metadata['ntd_ids'].length).toEqual(3);
   });
 
   it('test_train_nationwide', async () => {
-    const [intensities, metadata] = await emcft.get_intensities(2022, null, TRAIN_MODES);
+    const [intensities, metadata] = await emcft.get_transit_intensities_for_uace(2022, null, TRAIN_MODES);
     expect(intensities['overall']['wh_per_km']).toBeCloseTo(68.06, 2);
     expect(metadata['ntd_ids'].length).toEqual(49);
   });
 
   it('test_all_modes_nationwide', async () => {
-    const [intensities, metadata] = await emcft.get_intensities(2022, null, null);
+    const [intensities, metadata] = await emcft.get_transit_intensities_for_uace(2022, null, null);
     expect(intensities['overall']['wh_per_km']).toBeCloseTo(486.96, 2);
     expect(metadata['ntd_ids'].length).toEqual(517);
   });
@@ -105,7 +105,7 @@ describe('TestTransitCalculationsFakeData', () => {
     fs.writeFileSync('./src/emcommon/resources/ntd9999_intensities.json', JSON.stringify(fake_data));
 
     console.log({cwd: process.cwd()});
-    const [intensities, metadata] = await emcft.get_intensities(9999, '99999', BUS_MODES);
+    const [intensities, metadata] = await emcft.get_transit_intensities_for_uace(9999, '99999', BUS_MODES);
 
     const expected_intensities = {
       diesel: { wh_per_km: 550, weight: 0.8 },

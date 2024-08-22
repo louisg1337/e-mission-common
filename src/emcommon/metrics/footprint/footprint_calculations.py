@@ -9,45 +9,51 @@ import emcommon.diary.base_modes as emcdb
 import emcommon.metrics.footprint.transit_calculations as transit
 import emcommon.metrics.footprint.util as util
 
-# __pragma__('jsiter')
-async def get_egrid_carbon_intensity(year: int, coords: list[float, float] | None) -> tuple[float, dict]:
-  """
-  Returns the estimated carbon intensity of the electricity grid at the given coordinates for the
-  given year (units in kg CO2e per MWh).
 
-  :param year: The year as int, e.g. 2022
-  :param coords: The coordinates as [lon, lat], e.g. [-84.52, 39.13]
-  """
-  Logger.log_debug(f"Getting eGRID carbon intensity for year {year} and coords {coords}")
-  intensities_data = await util.get_intensities_data(year, 'egrid')
-  actual_year = intensities_data['metadata']['year']
-  metadata = {
-    "data_sources": [f"egrid{actual_year}"],
-    "data_source_urls": intensities_data['metadata']['data_source_urls'],
-    "is_provisional": actual_year != year,
-    "requested_year": year,
-    "egrid_coords": coords,
-    "egrid_region": None,
-  }
+async def get_egrid_intensity_for_trip(trip):
+    Logger.log_debug(f"Getting eGRID carbon intensity for trip: {trip}")
+    year = util.year_of_trip(trip)
+    coords = trip['start_loc']['coordinates']
+    return await get_egrid_intensity_for_coords(year, coords)
 
-  if coords is not None:
-    metadata['egrid_region'] = await util.get_egrid_region(coords, actual_year)
-  if metadata['egrid_region'] is None:
+
+async def get_egrid_intensity_for_coords(year: int, coords: list[float, float] | None, metadata: dict = {}):
+    Logger.log_debug(f"Getting eGRID carbon intensity for year {year} and coords {coords}")
+    metadata.update({'requested_coords': coords})
     if coords is not None:
-      Logger.log_warn(f"eGRID region not found for coords {coords} in year {year}. Using national average.")
+        region = await util.get_egrid_region(coords, year)
     else:
-      Logger.log_debug(f"Coords not given for eGRID lookup in year {year}. Using national average.")
-    # use national average
-    kg_per_kwh = intensities_data['national_kg_per_mwh']
-  else:
-    kg_per_kwh = intensities_data['regions_kg_per_mwh'][metadata['egrid_region']]
-  return (kg_per_kwh, metadata)
-# __pragma__('nojsiter')
+        region = None
+    return await get_egrid_intensity_for_region(year, region, metadata)
+
+   
+async def get_egrid_intensity_for_region(year: int, region: str | None, metadata: dict = {}):
+    """
+    Returns the estimated carbon intensity of the electricity grid at the given region for the given year (units in kg CO2e per MWh).
+    :param year: The year as int, e.g. 2022
+    :param region: The region as str, e.g. "NWPP"
+    """
+    Logger.log_debug(f"Getting eGRID carbon intensity for year {year} and region {region}")
+    intensities_data = await util.get_intensities_data(year, 'egrid')
+    actual_year = intensities_data['metadata']['year']
+    metadata.update({
+        "data_sources": [f"egrid{actual_year}"],
+        "data_source_urls": intensities_data['metadata']['data_source_urls'],
+        "is_provisional": actual_year != year,
+        "requested_year": year,
+        "egrid_region": region,
+    })
+    if region is not None and region in intensities_data['regions_kg_per_mwh']:
+        kg_per_kwh = intensities_data['regions_kg_per_mwh'][region]
+    else:
+        Logger.log_warn(f"eGRID region not found for region {region} in year {year}. Using national average.")
+        kg_per_kwh = intensities_data['national_kg_per_mwh']
+    return (kg_per_kwh, metadata)
 
 
 def merge_metadatas(meta_a, meta_b):
     """
-    Merge two metadata dictionaries, where lists are concatenated and booleans are ORed.
+    Merge two metadata dictionaries, where child lists/arrays are concatenated and booleans are ORed.
     """
     # __pragma__('jsiter')
     for key in meta_b:
@@ -76,7 +82,7 @@ async def calc_footprint_for_trip(trip, mode_label_option):
   rich_mode = emcdb.get_rich_mode(mode_label_option)
   mode_footprint = dict(rich_mode['footprint'])
   if 'transit' in mode_footprint:
-    [mode_footprint, transit_metadata] = await transit.get_intensities_for_trip(trip, mode_footprint['transit'])
+    (mode_footprint, transit_metadata) = await transit.get_transit_intensities_for_trip(trip, mode_footprint['transit'])
     merge_metadatas(metadata, transit_metadata)
   kwh_total = 0
   kg_co2_total = 0
@@ -92,9 +98,7 @@ async def calc_footprint_for_trip(trip, mode_label_option):
       kg_co2 = kwh * util.FUELS_KG_CO2_PER_KWH[fuel_type]
     elif fuel_type == 'electric':
       Logger.log_debug('Using eGRID carbon intensity for electric')
-      year = util.year_of_trip(trip)
-      coords = trip['start_loc']['coordinates']
-      [kg_per_kwh, egrid_metadata] = await get_egrid_carbon_intensity(year, coords)
+      (kg_per_kwh, egrid_metadata) = await get_egrid_intensity_for_trip(trip)
       merge_metadatas(metadata, egrid_metadata)
       kg_co2 = kwh * kg_per_kwh
     else:

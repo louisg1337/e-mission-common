@@ -12,13 +12,19 @@ def weighted_mean(values, weights):
     w_sum = sum(weights)
     return sum([v * w / w_sum for v, w in zip(values, weights)])
 
-async def get_intensities_for_trip(trip, modes):
+async def get_transit_intensities_for_trip(trip, modes: list[str] | None):
+    Logger.log_debug(f"Getting mode footprint for transit modes {modes} in trip: {trip}")
     year = util.year_of_trip(trip)
     coords = trip["start_loc"]["coordinates"]
-    uace_code = await util.get_uace_by_coords(coords, year)
-    return await get_intensities(year, uace_code, modes)
+    return await get_transit_intensities_for_coords(year, coords, modes)
 
-async def get_intensities(year: int, uace: str | None = None, modes: list[str] | None = None):
+async def get_transit_intensities_for_coords(year: int, coords: list[float, float], modes: list[str] | None, metadata: dict = {}):
+    Logger.log_debug(f"Getting mode footprint for transit modes {modes} in year {year} and coords {coords}")
+    metadata.update({ 'requested_coords': coords })
+    uace_code = await util.get_uace_by_coords(coords, year)
+    return await get_transit_intensities_for_uace(year, uace_code, modes, metadata)
+
+async def get_transit_intensities_for_uace(year: int, uace: str | None = None, modes: list[str] | None = None, metadata: dict = {}):
     """
     Returns estimated energy intensities by fuel type across the given modes in the urban area of the given trip.
     :param trip: The trip to get the data for, e.g. {"year": "2022", "distance": 1000, "start_loc": {"coordinates": [-84.52, 39.13]}}
@@ -28,7 +34,7 @@ async def get_intensities(year: int, uace: str | None = None, modes: list[str] |
     Logger.log_debug(f"Getting mode footprint for transit modes {modes} in year {year} and UACE {uace}")
     intensities_data = await util.get_intensities_data(year, 'ntd')
     actual_year = intensities_data['metadata']['year']
-    metadata = {
+    metadata.update({
         "data_sources": [f"ntd{actual_year}"],
         "data_source_urls": intensities_data['metadata']['data_source_urls'],
         "is_provisional": actual_year != year,
@@ -36,7 +42,7 @@ async def get_intensities(year: int, uace: str | None = None, modes: list[str] |
         "ntd_uace_code": uace,
         "ntd_modes": modes,
         "ntd_ids": [],
-    }
+    })
 
     total_upt = 0
     agency_mode_fueltypes = []
@@ -66,10 +72,10 @@ async def get_intensities(year: int, uace: str | None = None, modes: list[str] |
         Logger.log_info(f"Insufficient data for year {year} and UACE {uace} and modes {modes}")
         if uace:
             Logger.log_info("Retrying with UACE = None")
-            return await get_intensities(year, None, modes)
+            return await get_transit_intensities_for_uace(year, None, modes)
         if modes:
             Logger.log_info("Retrying with modes = None")
-            return await get_intensities(year, uace, None)
+            return await get_transit_intensities_for_uace(year, uace, None)
         Logger.log_error("No data available for any UACE or modes")
         return (None, metadata)
 

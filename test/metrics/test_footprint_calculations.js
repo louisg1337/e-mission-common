@@ -18,7 +18,7 @@ const EGRID_EXPECTED_LBS_PER_KWH = {
 describe('TestFootprintCalculations', () => {
   it('test_get_egrid_intensity_cincinnati_2022', async () => {
     const coords = [-84.52, 39.13];
-    const [kg_per_kwh, metadata] = await emcmff.get_egrid_carbon_intensity(2022, coords);
+    const [kg_per_kwh, metadata] = await emcmff.get_egrid_intensity_for_coords(2022, coords);
 
     const expected_kg_per_kwh = EGRID_EXPECTED_LBS_PER_KWH["RFCW"] * KG_PER_LB;
     const expected_metadata = {
@@ -28,7 +28,7 @@ describe('TestFootprintCalculations', () => {
       ],
       "is_provisional": false,
       "requested_year": 2022,
-      "egrid_coords": coords,
+      "requested_coords": coords,
       "egrid_region": "RFCW",
     };
     expect(kg_per_kwh).toBeCloseTo(expected_kg_per_kwh, 2);
@@ -37,7 +37,7 @@ describe('TestFootprintCalculations', () => {
 
   it('test_get_egrid_intensity_eagle_point_2023', async () => {
     const coords = [-122.83, 42.29];
-    const [kg_per_kwh, metadata] = await emcmff.get_egrid_carbon_intensity(2023, coords);
+    const [kg_per_kwh, metadata] = await emcmff.get_egrid_intensity_for_coords(2023, coords);
 
     const expected_kg_per_kwh = EGRID_EXPECTED_LBS_PER_KWH["NWPP"] * KG_PER_LB;
     const expected_metadata = {
@@ -47,7 +47,7 @@ describe('TestFootprintCalculations', () => {
       ],
       "is_provisional": true,
       "requested_year": 2023,
-      "egrid_coords": coords,
+      "requested_coords": coords,
       "egrid_region": "NWPP",
     };
     expect(kg_per_kwh).toBeCloseTo(expected_kg_per_kwh, 2);

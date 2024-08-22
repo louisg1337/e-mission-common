@@ -17,7 +17,7 @@ class TestFootprintCalculations(unittest.IsolatedAsyncioTestCase):
     async def test_egrid_intensity_cincinnati_2022(self):
         # Cincinnati, OH (RFCW region)
         coords = [-84.52, 39.13]
-        (kg_per_kwh, metadata) = await emcmff.get_egrid_carbon_intensity(2022, coords)
+        (kg_per_kwh, metadata) = await emcmff.get_egrid_intensity_for_coords(2022, coords)
 
         expected_kg_per_kwh = EGRID_EXPECTED_LBS_PER_KWH["RFCW"] * KG_PER_LB
         expected_metadata = {
@@ -27,7 +27,7 @@ class TestFootprintCalculations(unittest.IsolatedAsyncioTestCase):
             ],
             "is_provisional": False,
             "requested_year": 2022,
-            "egrid_coords": coords,
+            "requested_coords": coords,
             "egrid_region": "RFCW",
         }
         self.assertAlmostEqual(kg_per_kwh, expected_kg_per_kwh, places=2)
@@ -37,7 +37,7 @@ class TestFootprintCalculations(unittest.IsolatedAsyncioTestCase):
     async def test_egrid_intensity_eagle_point_2023(self):
         # Eagle Point, OR (NWPP region)
         coords = [-122.83, 42.29]
-        (kg_per_kwh, metadata) = await emcmff.get_egrid_carbon_intensity(2023, coords)
+        (kg_per_kwh, metadata) = await emcmff.get_egrid_intensity_for_coords(2023, coords)
 
         expected_kg_per_kwh = EGRID_EXPECTED_LBS_PER_KWH["NWPP"] * KG_PER_LB
         expected_metadata = {
@@ -47,7 +47,7 @@ class TestFootprintCalculations(unittest.IsolatedAsyncioTestCase):
             ],
             "is_provisional": True, # provisional; 2023 was requested but 2022 was used
             "requested_year": 2023,
-            "egrid_coords": coords,
+            "requested_coords": coords,
             "egrid_region": "NWPP",
         }
         self.assertAlmostEqual(kg_per_kwh, expected_kg_per_kwh, places=2)

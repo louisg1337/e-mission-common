@@ -18,39 +18,39 @@ class TestTransitCalculations(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(result, cincinnati_uace_code)
 
     async def test_bus_nyc(self):
-        [intensities, metadata] = await emcmft.get_intensities(2022, NYC_UACE_CODE, BUS_MODES)
+        (intensities, metadata) = await emcmft.get_transit_intensities_for_uace(2022, NYC_UACE_CODE, BUS_MODES)
         self.assertAlmostEqual(intensities['overall']['wh_per_km'], 646.80, places=2)
         self.assertEqual(len(metadata['ntd_ids']), 22)
 
     async def test_bus_chicago(self):
-        [intensities, metadata] = await emcmft.get_intensities(2022, CHICAGO_UACE_CODE, BUS_MODES)
+        (intensities, metadata) = await emcmft.get_transit_intensities_for_uace(2022, CHICAGO_UACE_CODE, BUS_MODES)
         self.assertAlmostEqual(intensities['overall']['wh_per_km'], 1048.12, places=2)
         self.assertEqual(len(metadata['ntd_ids']), 2)
 
     async def test_bus_nationwide(self):
-        [intensities, metadata] = await emcmft.get_intensities(2022, None, BUS_MODES)
+        (intensities, metadata) = await emcmft.get_transit_intensities_for_uace(2022, None, BUS_MODES)
         self.assertAlmostEqual(intensities['overall']['wh_per_km'], 811.85, places=2)
         self.assertEqual(len(metadata['ntd_ids']), 410)
 
     async def test_train_nyc(self):
-        [intensities, metadata] = await emcmft.get_intensities(2022, NYC_UACE_CODE, TRAIN_MODES)
+        (intensities, metadata) = await emcmft.get_transit_intensities_for_uace(2022, NYC_UACE_CODE, TRAIN_MODES)
         self.assertAlmostEqual(intensities['overall']['wh_per_km'], 24.79, places=2)
         self.assertEqual(len(metadata['ntd_ids']), 6)
 
     async def test_train_chicago(self):
-        [intensities, metadata] = await emcmft.get_intensities(2022, CHICAGO_UACE_CODE, TRAIN_MODES)
+        (intensities, metadata) = await emcmft.get_transit_intensities_for_uace(2022, CHICAGO_UACE_CODE, TRAIN_MODES)
         self.assertAlmostEqual(intensities['overall']['wh_per_km'], 159.04, places=2)
         # 3 passenger rail systems in Chicago - "the L", Metra, and South Shore Line
         self.assertEqual(len(metadata['ntd_ids']), 3)
 
     async def test_train_nationwide(self):
-        [intensities, metadata] = await emcmft.get_intensities(2022, None, TRAIN_MODES)
+        (intensities, metadata) = await emcmft.get_transit_intensities_for_uace(2022, None, TRAIN_MODES)
         self.assertAlmostEqual(intensities['overall']['wh_per_km'], 68.06, places=2)
         self.assertEqual(len(metadata['ntd_ids']), 49)
 
     async def test_all_modes_nationwide(self):
-        [intesities, metadata] = await emcmft.get_intensities(2022, None, None)
-        self.assertAlmostEqual(intesities['overall']['wh_per_km'], 486.96, places=2)
+        (intensities, metadata) = await emcmft.get_transit_intensities_for_uace(2022, None, None)
+        self.assertAlmostEqual(intensities['overall']['wh_per_km'], 486.96, places=2)
         self.assertEqual(len(metadata['ntd_ids']), 517)
 
 
@@ -83,7 +83,7 @@ class TestTransitCalculationsFakeData(unittest.IsolatedAsyncioTestCase):
             }
         """)
 
-        [intensities, metadata] = await emcmft.get_intensities(9999, '99999', BUS_MODES)
+        (intensities, metadata) = await emcmft.get_transit_intensities_for_uace(9999, '99999', BUS_MODES)
 
         expected_intensities = {
             "diesel": {"wh_per_km": 550, "weight": 0.8},

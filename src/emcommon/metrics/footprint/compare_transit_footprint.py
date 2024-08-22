@@ -2,8 +2,6 @@ import emcommon.metrics.footprint.transit_calculations as jack_transit_calculati
 import emcommon.metrics.footprint.louis_transit_calculations as louis_transit_calculations
 from emcommon.diary.base_modes import BASE_MODES
 
-# print(louis_transit_calculations.get_intensities(2022, "16264", ["MB", "RB", "CB"]))
-
 cities = [
     "63217", # New York
     "16264", # Chicago
@@ -20,7 +18,7 @@ for uace in cities:
         if 'footprint' not in BASE_MODES[mode] or 'transit' not in BASE_MODES[mode]['footprint']:
             continue
         print('Mode:', mode)
-        print(jack_transit_calculations.get_intensities(
+        print(jack_transit_calculations.get_transit_intensities_for_uace(
             2022,
             uace,
             BASE_MODES[mode]['footprint']['transit']
