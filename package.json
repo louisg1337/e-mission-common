@@ -12,7 +12,7 @@
     "testMatch": [
       "**/test/**/*.js"
     ],
-    "testEnvironment": "jsdom",
+    "globals": { "window": {} },
     "transform": {}
   },
   "prettier": {

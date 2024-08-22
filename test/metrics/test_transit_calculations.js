@@ -1,186 +1,127 @@
-import { footprint_calculations, base_modes, obj_to_dict } from '../../emcommon_js/index.js';
-import { dict } from '../../emcommon_js/org.transcrypt.__runtime__.js';
+import fs from 'fs';
 
-const transit_calculations = footprint_calculations.transit;
-const ntd_data = footprint_calculations.transit.ntd_data;
+import { get_uace_by_coords } from '../../emcommon_js/emcommon.metrics.footprint.util';
+import * as emcft from '../../emcommon_js/emcommon.metrics.footprint.transit_calculations';
+import * as emcdb from '../../emcommon_js/emcommon.diary.base_modes';
+
 
 const NYC_UACE_CODE = '63217';
 const CHICAGO_UACE_CODE = '16264';
 
-const BUS_MODES = base_modes.BASE_MODES['BUS']['footprint']['transit'];
-const TRAIN_MODES = base_modes.BASE_MODES['TRAIN']['footprint']['transit'];
+const BUS_MODES = emcdb.BASE_MODES['BUS']['footprint']['transit'];
+const TRAIN_MODES = emcdb.BASE_MODES['TRAIN']['footprint']['transit'];
+
 
 describe('TestTransitCalculations', () => {
-  it('test_get_uace_by_zipcode', () => {
-    // https://www.cincinnati-oh.gov/finance/income-taxes/resources-references/street-listings-guide/
-    // "ZIP Codes Entirely Within Cincinnati"
-    const cincinnati_zip_codes = [
-      '45220',
-      '45221',
-      '45201',
-      '45202',
-      '45203',
-      '45206',
-      '45210',
-      '45214',
-      '45219',
-      '45220',
-      '45221',
-      '45223',
-      '45225',
-      '45226',
-      '45228',
-      '45232',
-      '45234',
-      '45250',
-      '45267',
-    ];
+  it('test_get_uace_by_zipcode', async () => {
     const cincinnati_uace_code = '16885';
-    for (const zipcode of cincinnati_zip_codes) {
-      console.debug('Testing zipcode: ', zipcode);
-      const result = transit_calculations.get_uace_by_zipcode(zipcode, 2022);
-      expect(result).toEqual(cincinnati_uace_code);
-    }
+    const result = await get_uace_by_coords([-84.5, 39.1], 2022);
+    expect(result).toEqual(cincinnati_uace_code);
   });
 
-  it('test_bus_nyc', () => {
-    const [intensities, metadata] = transit_calculations.get_intensities_for_year_and_uace(
-      2022,
-      NYC_UACE_CODE,
-      BUS_MODES,
-    );
-    expect(intensities['overall']['wh_per_km']).toBeCloseTo(663.16, 2);
-    expect(metadata['ntd_ids'].length).toEqual(24);
+  it('test_bus_nyc', async () => {
+    const [intensities, metadata] = await emcft.get_intensities(2022, NYC_UACE_CODE, BUS_MODES);
+    expect(intensities['overall']['wh_per_km']).toBeCloseTo(646.80, 2);
+    expect(metadata['ntd_ids'].length).toEqual(22);
   });
-
-  it('test_bus_chicago', () => {
-    const [intensities, metadata] = transit_calculations.get_intensities_for_year_and_uace(
-      2022,
-      CHICAGO_UACE_CODE,
-      BUS_MODES,
-    );
-    expect(intensities['overall']['wh_per_km']).toBeCloseTo(1072.5, 2);
-    expect(metadata['ntd_ids'].length).toEqual(3);
-  });
-
-  it('test_bus_nationwide', () => {
-    const [intensities, metadata] = transit_calculations.get_intensities_for_year_and_uace(
-      2022,
-      null,
-      BUS_MODES,
-    );
-    expect(intensities['overall']['wh_per_km']).toBeCloseTo(867.36, 2);
-    expect(metadata['ntd_ids'].length).toEqual(415);
-  });
-
-  it('test_train_nyc', () => {
-    const [intensities, metadata] = transit_calculations.get_intensities_for_year_and_uace(
-      2022,
-      NYC_UACE_CODE,
-      TRAIN_MODES,
-    );
-    expect(intensities['overall']['wh_per_km']).toBeCloseTo(164.68, 2);
-    expect(metadata['ntd_ids'].length).toEqual(6);
-  });
-
-  it('test_train_chicago', () => {
-    const [intensities, metadata] = transit_calculations.get_intensities_for_year_and_uace(
-      2022,
-      CHICAGO_UACE_CODE,
-      TRAIN_MODES,
-    );
-    expect(intensities['overall']['wh_per_km']).toBeCloseTo(401.71, 2);
-    // only 2 passenger rail lines in Chicago - "the L" and Metra !
+  
+  it('test_bus_chicago', async () => {
+    const [intensities, metadata] = await emcft.get_intensities(2022, CHICAGO_UACE_CODE, BUS_MODES);
+    expect(intensities['overall']['wh_per_km']).toBeCloseTo(1048.12, 2);
     expect(metadata['ntd_ids'].length).toEqual(2);
   });
 
-  it('test_train_nationwide', () => {
-    const [intensities, metadata] = transit_calculations.get_intensities_for_year_and_uace(
-      2022,
-      null,
-      TRAIN_MODES,
-    );
-    expect(intensities['overall']['wh_per_km']).toBeCloseTo(240.85, 2);
-    expect(metadata['ntd_ids'].length).toEqual(40);
+  it('test_bus_nationwide', async () => {
+    const [intensities, metadata] = await emcft.get_intensities(2022, null, BUS_MODES);
+    expect(intensities['overall']['wh_per_km']).toBeCloseTo(811.85, 2);
+    expect(metadata['ntd_ids'].length).toEqual(410);
   });
 
-  it('test_all_modes_nationwide', () => {
-    const [intensities, metadata] = transit_calculations.get_intensities_for_year_and_uace(
-      2022,
-      null,
-      null,
-    );
-    expect(intensities['overall']['wh_per_km']).toBeCloseTo(547.53, 2);
-    expect(metadata['ntd_ids'].length).toEqual(487);
+  it('test_train_nyc', async () => {
+    const [intensities, metadata] = await emcft.get_intensities(2022, NYC_UACE_CODE, TRAIN_MODES);
+    expect(intensities['overall']['wh_per_km']).toBeCloseTo(24.79, 2);
+    expect(metadata['ntd_ids'].length).toEqual(6);
+  });
+
+  it('test_train_chicago', async () => {
+    const [intensities, metadata] = await emcft.get_intensities(2022, CHICAGO_UACE_CODE, TRAIN_MODES);
+    expect(intensities['overall']['wh_per_km']).toBeCloseTo(159.04, 2);
+    expect(metadata['ntd_ids'].length).toEqual(3);
+  });
+
+  it('test_train_nationwide', async () => {
+    const [intensities, metadata] = await emcft.get_intensities(2022, null, TRAIN_MODES);
+    expect(intensities['overall']['wh_per_km']).toBeCloseTo(68.06, 2);
+    expect(metadata['ntd_ids'].length).toEqual(49);
+  });
+
+  it('test_all_modes_nationwide', async () => {
+    const [intensities, metadata] = await emcft.get_intensities(2022, null, null);
+    expect(intensities['overall']['wh_per_km']).toBeCloseTo(486.96, 2);
+    expect(metadata['ntd_ids'].length).toEqual(517);
   });
 });
 
 describe('TestTransitCalculationsFakeData', () => {
-  it('test_get_intensities_fake_data2', () => {
-    /**
-     * Example scenario from:
-     * https://github.com/JGreenlee/e-mission-common/pull/2#issuecomment-2263813540
-     */
-    ntd_data['2022'].push(
-      dict({
-        'NTD ID': 'Agency A',
-        'UACE Code': 'foo',
-        Mode: 'MB',
-        'Diesel (km)': 12000,
-        'Diesel (Wh/km)': 3000,
-        'All Fuels (km)': 12000,
-        'Passenger km': 60000,
-        'Vehicle km': 12000,
-        'Average Passengers': 5,
-      }),
-    );
-    ntd_data['2022'].push(
-      dict({
-        'NTD ID': 'Agency A',
-        'UACE Code': 'foo',
-        Mode: 'RB',
-        'Electric (km)': 3000,
-        'Electric (Wh/km)': 2000,
-        'All Fuels (km)': 3000,
-        'Passenger km': 15000,
-        'Vehicle km': 3750,
-        'Average Passengers': 4,
-      }),
-    );
-    ntd_data['2022'].push(
-      dict({
-        'NTD ID': 'Agency B',
-        'UACE Code': 'foo',
-        Mode: 'MB',
-        'Diesel (km)': 3200,
-        'Diesel (Wh/km)': 2000,
-        'Electric (km)': 800,
-        'Electric (Wh/km)': 1500,
-        'All Fuels (km)': 4000,
-        'Passenger km': 25000,
-        'Vehicle km': 5000,
-        'Average Passengers': 5,
-      }),
-    );
-    const [intensities, metadata] = transit_calculations.get_intensities_for_year_and_uace(
-      2022,
-      'foo',
-      BUS_MODES,
-    );
-    console.debug({ intensities });
-    expect(intensities).toEqual({
+  it('test_get_intensities_fake_data2', async () => {
+    /* Example scenario from:
+      https://github.com/JGreenlee/e-mission-common/pull/2#issuecomment-2263813540
+    */
+    // Create a fake NTD data file for year 9999 and UACE code "99999"
+    const fake_data = {
+      records: [
+        {
+          'NTD ID': 'Agency A',
+          'UACE Code': '99999',
+          'Mode': 'MB',
+          'Diesel (Wh/pkm)': 600,
+          'Diesel (%)': 100,
+          'Unlinked Passenger Trips': 600,
+        },
+        {
+          'NTD ID': 'Agency A',
+          'UACE Code': '99999',
+          'Mode': 'RB',
+          'Electric (Wh/pkm)': 500,
+          'Electric (%)': 100,
+          'Unlinked Passenger Trips': 150,
+        },
+        {
+          'NTD ID': 'Agency B',
+          'UACE Code': '99999',
+          'Mode': 'MB',
+          'Diesel (Wh/pkm)': 400,
+          'Diesel (%)': 80,
+          'Electric (Wh/pkm)': 300,
+          'Electric (%)': 20,
+          'Unlinked Passenger Trips': 250,
+        },
+      ],
+      metadata: {
+        year: 9999,
+        data_source_urls: ['https://fake.url', 'https://fake2.url'],
+      },
+    };
+    fs.writeFileSync('./src/emcommon/resources/ntd9999_intensities.json', JSON.stringify(fake_data));
+
+    console.log({cwd: process.cwd()});
+    const [intensities, metadata] = await emcft.get_intensities(9999, '99999', BUS_MODES);
+
+    const expected_intensities = {
       diesel: { wh_per_km: 550, weight: 0.8 },
       electric: { wh_per_km: 450, weight: 0.2 },
       overall: { wh_per_km: 530, weight: 1.0 },
-    });
-    expect(metadata).toEqual({
-      source: 'NTD',
+    };
+    const expected_metadata = {
+      data_sources: ['ntd9999'],
+      data_source_urls: ['https://fake.url', 'https://fake2.url'],
       is_provisional: false,
-      year: 2022,
-      requested_year: 2022,
-      uace_code: 'foo',
-      modes: BUS_MODES,
+      requested_year: 9999,
+      ntd_uace_code: '99999',
+      ntd_modes: BUS_MODES,
       ntd_ids: ['Agency A', 'Agency B'],
-    });
+    };
+    expect(intensities).toEqual(expected_intensities);
+    expect(metadata).toEqual(expected_metadata);
   });
 });
