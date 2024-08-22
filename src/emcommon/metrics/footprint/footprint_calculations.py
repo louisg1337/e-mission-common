@@ -50,9 +50,14 @@ def merge_metadatas(meta_a, meta_b):
     """
     Merge two metadata dictionaries, where lists are concatenated and booleans are ORed.
     """
-    for key, value in meta_b.items():
+    # __pragma__('jsiter')
+    for key in meta_b:
+        # __pragma__('nojsiter')
+        value = meta_b[key]
         if key not in meta_a:
             meta_a[key] = value
+        elif hasattr(meta_a[key], 'concat'):
+            meta_a[key] = meta_a[key].concat(value)
         elif isinstance(value, list):
             meta_a[key] = meta_a[key] + value
         elif isinstance(value, bool):
@@ -76,7 +81,11 @@ async def calc_footprint_for_trip(trip, mode_label_option):
     merge_metadatas(metadata, transit_metadata)
   kwh_total = 0
   kg_co2_total = 0
-  for fuel_type, fuel_type_footprint in mode_footprint.items():
+
+  # __pragma__('jsiter')
+  for fuel_type in mode_footprint:
+    # __pragma__('nojsiter')
+    fuel_type_footprint = mode_footprint[fuel_type]
     # distance in m converted to km; km * Wh/km results in Wh; convert to kWh
     kwh = (distance / 1000) * fuel_type_footprint['wh_per_km'] / 1000
     if fuel_type in util.FUELS_KG_CO2_PER_KWH:

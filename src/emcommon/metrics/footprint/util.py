@@ -101,7 +101,9 @@ async def get_uace_by_coords(coords: list[float, float], year: int) -> str | Non
     url = f"https://geocoding.geo.census.gov/geocoder/geographies/coordinates?x={coords[0]}&y={coords[1]}&benchmark=Public_AR_Current&vintage=Census{census_year}_Current&layers=87&format=json"
 
     data = await fetch_url(url)
+    # __pragma__('jsiter')
     for g in data['result']['geographies']:
+        # __pragma__('nojsiter')
         for entry in data['result']['geographies'][g]:
             if 'UA' in entry:
                 return entry['UA']
