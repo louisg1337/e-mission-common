@@ -2,15 +2,15 @@ import emcommon.logger as Logger
 from emcommon.metrics.footprint.util import mpge_to_wh_per_km
 
 mode_colors = {
-    "pink": '#c32e85', # oklch(56% 0.2 350)     # e-car
-    "red": '#c21725', # oklch(52% 0.2 25)      # car
-    "orange": '#bf5900', # oklch(58% 0.16 50)     # air, hsr
-    "green": '#008148', # oklch(53% 0.14 155)    # bike, e-bike, moped
-    "blue": '#0074b7', # oklch(54% 0.14 245)    # walk
-    "periwinkle": '#6356bf', # oklch(52% 0.16 285)    # light rail, train, tram, subway
-    "magenta": '#9240a4', # oklch(52% 0.17 320)    # bus
-    "grey": '#555555', # oklch(45% 0 0)         # unprocessed / unknown
-    "taupe": '#7d585a', # oklch(50% 0.05 15)     # ferry, trolleybus, user-defined modes
+    "pink": '#c32e85',  # oklch(56% 0.2 350)     # e-car
+    "red": '#c21725',  # oklch(52% 0.2 25)      # car
+    "orange": '#bf5900',  # oklch(58% 0.16 50)     # air, hsr
+    "green": '#008148',  # oklch(53% 0.14 155)    # bike, e-bike, moped
+    "blue": '#0074b7',  # oklch(54% 0.14 245)    # walk
+    "periwinkle": '#6356bf',  # oklch(52% 0.16 285)    # light rail, train, tram, subway
+    "magenta": '#9240a4',  # oklch(52% 0.17 320)    # bus
+    "grey": '#555555',  # oklch(45% 0 0)         # unprocessed / unknown
+    "taupe": '#7d585a',  # oklch(50% 0.05 15)     # ferry, trolleybus, user-defined modes
 }
 
 NON_ACTIVE_METS = {
@@ -45,7 +45,7 @@ E_BIKING_METS = {
 # TODO get these from GREET or somewhere trustworthy
 GAS_CAR_MPG = 24
 ECAR_MPGE = 100
-PHEV_UF = 0.4 # UF = utility factor
+PHEV_UF = 0.4  # UF = utility factor
 PHEV_GAS_MPG = 40
 PHEV_ELEC_MPGE = 100
 E_BIKE_WH_PER_KM = 13.67
@@ -54,9 +54,9 @@ MOPED_AVG_MPG = 100
 TAXI_WH_PER_KM = 941.5
 AIR_WH_PER_KM = 999
 
-AIR_FOOTPRINT = { "jet_fuel": { "wh_per_km": AIR_WH_PER_KM } }
-CAR_FOOTPRINT = { "gasoline": { "wh_per_km": mpge_to_wh_per_km(GAS_CAR_MPG) } }
-E_CAR_FOOTPRINT = { "electric": { "wh_per_km": mpge_to_wh_per_km(ECAR_MPGE) } }
+AIR_FOOTPRINT = {"jet_fuel": {"wh_per_km": AIR_WH_PER_KM}}
+CAR_FOOTPRINT = {"gasoline": {"wh_per_km": mpge_to_wh_per_km(GAS_CAR_MPG)}}
+E_CAR_FOOTPRINT = {"electric": {"wh_per_km": mpge_to_wh_per_km(ECAR_MPGE)}}
 PHEV_CAR_FOOTPRINT = {
     "electric": {
         "wh_per_km": mpge_to_wh_per_km(PHEV_ELEC_MPGE),
@@ -67,157 +67,160 @@ PHEV_CAR_FOOTPRINT = {
         "weight": 1 - PHEV_UF
     },
 }
-E_BIKE_FOOTPRINT = {"electric": {"wh_per_km": E_BIKE_WH_PER_KM }}
-E_SCOOTER_FOOTPRINT = { "electric": { "wh_per_km": E_SCOOTER_WH_PER_KM } }
-MOPED_FOOTPRINT = { "gasoline": { "wh_per_km": mpge_to_wh_per_km(MOPED_AVG_MPG) } }
-TAXI_FOOTPRINT = { "gasoline": { "wh_per_km": TAXI_WH_PER_KM } }
+E_BIKE_FOOTPRINT = {"electric": {"wh_per_km": E_BIKE_WH_PER_KM}}
+E_SCOOTER_FOOTPRINT = {"electric": {"wh_per_km": E_SCOOTER_WH_PER_KM}}
+MOPED_FOOTPRINT = {"gasoline": {"wh_per_km": mpge_to_wh_per_km(MOPED_AVG_MPG)}}
+TAXI_FOOTPRINT = {"gasoline": {"wh_per_km": TAXI_WH_PER_KM}}
 
 BASE_MODES = {
-  # BEGIN MotionTypes
-  "IN_VEHICLE": {
-      "icon": 'speedometer',
-      "color": mode_colors['red'],
-      "met": NON_ACTIVE_METS,
-      # footprint not known; left undefined. later filled in by an average of:
-      # CAR, BUS, LIGHT_RAIL, TRAIN, TRAM, SUBWAY
-  },
-  "BICYCLING": {
-      "icon": 'bike',
-      "color": mode_colors['green'],
-      "met": BIKING_METS,
-      "footprint": {},
-  },
-  "ON_FOOT": {
-      "icon": 'walk',
-      "color": mode_colors['blue'],
-      "met": WALKING_METS,
-      "footprint": {},
-  },
-  "UNKNOWN": {
-      "icon": 'help',
-      "color": mode_colors['grey'],
-      # met and footprint not known; left undefined
-  },
-  "WALKING": {
-      "icon": 'walk',
-      "color": mode_colors['blue'],
-      "met": WALKING_METS,
-      "footprint": {},
-  },
-  "AIR_OR_HSR": {
-      "icon": 'airplane',
-      "color": mode_colors['orange'],
-      "met": NON_ACTIVE_METS,
-      "footprint": AIR_FOOTPRINT,
-  },
-  # END MotionTypes
-  "CAR": {
-      "icon": 'car',
-      "color": mode_colors['red'],
-      "met": NON_ACTIVE_METS,
-      "footprint": CAR_FOOTPRINT,
-  },
-  "E_CAR": {
-      "icon": 'car-electric',
-      "color": mode_colors['pink'],
-      "met": NON_ACTIVE_METS,
-      "footprint": E_CAR_FOOTPRINT,
-  },
-  "PHEV_CAR": {
-      "icon": 'car-electric',
-      "color": mode_colors['pink'],
-      "met": NON_ACTIVE_METS,
-      "footprint": PHEV_CAR_FOOTPRINT,
-  },
-  "E_BIKE": {
-      "icon": 'bicycle-electric',
-      "color": mode_colors['green'],
-      "met": E_BIKING_METS,
-      "footprint": E_BIKE_FOOTPRINT,
-  },
-  "E_SCOOTER": {
-      "icon": 'scooter-electric',
-      "color": mode_colors['periwinkle'],
-      "met": NON_ACTIVE_METS,
-      "footprint": E_SCOOTER_FOOTPRINT,
-  },
-  "MOPED": {
-      "icon": 'moped',
-      "color": mode_colors['green'],
-      "met": NON_ACTIVE_METS,
-      "footprint": MOPED_FOOTPRINT,
-  },
-  "TAXI": {
-      "icon": 'taxi',
-      "color": mode_colors['red'],
-      "met": NON_ACTIVE_METS,
-      "footprint": TAXI_FOOTPRINT,
-  },
-  "BUS": {
-      "icon": 'bus-side',
-      "color": mode_colors['magenta'],
-      "met": NON_ACTIVE_METS,
-      "footprint": { "transit": ["MB", "RB", "CB"] }, # fixed-route bus, bus rapid transit, commuter bus
-  },
-  "AIR": {
-      "icon": 'airplane',
-      "color": mode_colors['orange'],
-      "met": NON_ACTIVE_METS,
-      "footprint": AIR_FOOTPRINT,
-  },
-  "LIGHT_RAIL": {
-      "icon": 'train-car-passenger',
-      "color": mode_colors['periwinkle'],
-      "met": NON_ACTIVE_METS,
-      "footprint": { "transit": ["LR"] } # light rail
-  },
-  "TRAIN": {
-      "icon": 'train-car-passenger',
-      "color": mode_colors['periwinkle'],
-      "met": NON_ACTIVE_METS,
-      "footprint": { "transit": ["LR", "HR", "YR", "CR"] } # light rail, heavy rail, hybrid rail, commuter rail
-  },
-  "TRAM": {
-      "icon": 'tram',
-      "color": mode_colors['periwinkle'],
-      "met": NON_ACTIVE_METS,
-      "footprint": { "transit": ["SR"] } # streetcar
-  },
-  "SUBWAY": {
-      "icon": 'subway-variant',
-      "color": mode_colors['periwinkle'],
-      "met": NON_ACTIVE_METS,
-      "footprint": { "transit": ["HR"] } # heavy rail
-  },
-  "FERRY": {
-      "icon": 'ferry',
-      "color": mode_colors['taupe'],
-      "met": NON_ACTIVE_METS,
-      "footprint": { "transit": ["FB"] } # ferry boat
-  },
-  "TROLLEYBUS": {
-      "icon": 'bus-side',
-      "color": mode_colors['taupe'],
-      "met": NON_ACTIVE_METS,
-      "footprint": { "transit": ["TB", "SR"] } # trolleybus, streetcar
-  },
-  "UNPROCESSED": {
-      "icon": 'help',
-      "color": mode_colors['grey'],
-      # met not known; left undefined
-      # footprint not known; left undefined
-  },
-  "OTHER": {
-      "icon": 'pencil-circle',
-      "color": mode_colors['taupe'],
-      # met not known; left undefined
-      # footprint not known; left undefined
-  },
-};
+    # BEGIN MotionTypes
+    "IN_VEHICLE": {
+        "icon": 'speedometer',
+        "color": mode_colors['red'],
+        "met": NON_ACTIVE_METS,
+        # footprint not known; left undefined. later filled in by an average of:
+        # CAR, BUS, LIGHT_RAIL, TRAIN, TRAM, SUBWAY
+    },
+    "BICYCLING": {
+        "icon": 'bike',
+        "color": mode_colors['green'],
+        "met": BIKING_METS,
+        "footprint": {},
+    },
+    "ON_FOOT": {
+        "icon": 'walk',
+        "color": mode_colors['blue'],
+        "met": WALKING_METS,
+        "footprint": {},
+    },
+    "UNKNOWN": {
+        "icon": 'help',
+        "color": mode_colors['grey'],
+        # met and footprint not known; left undefined
+    },
+    "WALKING": {
+        "icon": 'walk',
+        "color": mode_colors['blue'],
+        "met": WALKING_METS,
+        "footprint": {},
+    },
+    "AIR_OR_HSR": {
+        "icon": 'airplane',
+        "color": mode_colors['orange'],
+        "met": NON_ACTIVE_METS,
+        "footprint": AIR_FOOTPRINT,
+    },
+    # END MotionTypes
+    "CAR": {
+        "icon": 'car',
+        "color": mode_colors['red'],
+        "met": NON_ACTIVE_METS,
+        "footprint": CAR_FOOTPRINT,
+    },
+    "E_CAR": {
+        "icon": 'car-electric',
+        "color": mode_colors['pink'],
+        "met": NON_ACTIVE_METS,
+        "footprint": E_CAR_FOOTPRINT,
+    },
+    "PHEV_CAR": {
+        "icon": 'car-electric',
+        "color": mode_colors['pink'],
+        "met": NON_ACTIVE_METS,
+        "footprint": PHEV_CAR_FOOTPRINT,
+    },
+    "E_BIKE": {
+        "icon": 'bicycle-electric',
+        "color": mode_colors['green'],
+        "met": E_BIKING_METS,
+        "footprint": E_BIKE_FOOTPRINT,
+    },
+    "E_SCOOTER": {
+        "icon": 'scooter-electric',
+        "color": mode_colors['periwinkle'],
+        "met": NON_ACTIVE_METS,
+        "footprint": E_SCOOTER_FOOTPRINT,
+    },
+    "MOPED": {
+        "icon": 'moped',
+        "color": mode_colors['green'],
+        "met": NON_ACTIVE_METS,
+        "footprint": MOPED_FOOTPRINT,
+    },
+    "TAXI": {
+        "icon": 'taxi',
+        "color": mode_colors['red'],
+        "met": NON_ACTIVE_METS,
+        "footprint": TAXI_FOOTPRINT,
+    },
+    "BUS": {
+        "icon": 'bus-side',
+        "color": mode_colors['magenta'],
+        "met": NON_ACTIVE_METS,
+        # fixed-route bus, bus rapid transit, commuter bus
+        "footprint": {"transit": ["MB", "RB", "CB"]},
+    },
+    "AIR": {
+        "icon": 'airplane',
+        "color": mode_colors['orange'],
+        "met": NON_ACTIVE_METS,
+        "footprint": AIR_FOOTPRINT,
+    },
+    "LIGHT_RAIL": {
+        "icon": 'train-car-passenger',
+        "color": mode_colors['periwinkle'],
+        "met": NON_ACTIVE_METS,
+        "footprint": {"transit": ["LR"]}  # light rail
+    },
+    "TRAIN": {
+        "icon": 'train-car-passenger',
+        "color": mode_colors['periwinkle'],
+        "met": NON_ACTIVE_METS,
+        # light rail, heavy rail, hybrid rail, commuter rail
+        "footprint": {"transit": ["LR", "HR", "YR", "CR"]}
+    },
+    "TRAM": {
+        "icon": 'tram',
+        "color": mode_colors['periwinkle'],
+        "met": NON_ACTIVE_METS,
+        "footprint": {"transit": ["SR"]}  # streetcar
+    },
+    "SUBWAY": {
+        "icon": 'subway-variant',
+        "color": mode_colors['periwinkle'],
+        "met": NON_ACTIVE_METS,
+        "footprint": {"transit": ["HR"]}  # heavy rail
+    },
+    "FERRY": {
+        "icon": 'ferry',
+        "color": mode_colors['taupe'],
+        "met": NON_ACTIVE_METS,
+        "footprint": {"transit": ["FB"]}  # ferry boat
+    },
+    "TROLLEYBUS": {
+        "icon": 'bus-side',
+        "color": mode_colors['taupe'],
+        "met": NON_ACTIVE_METS,
+        "footprint": {"transit": ["TB", "SR"]}  # trolleybus, streetcar
+    },
+    "UNPROCESSED": {
+        "icon": 'help',
+        "color": mode_colors['grey'],
+        # met not known; left undefined
+        # footprint not known; left undefined
+    },
+    "OTHER": {
+        "icon": 'pencil-circle',
+        "color": mode_colors['taupe'],
+        # met not known; left undefined
+        # footprint not known; left undefined
+    },
+}
+
 
 def get_base_mode_by_key(motionName):
     key = ('' + motionName).upper()
-    pop = key.split('.').pop() # if "MotionTypes.WALKING", then just take "WALKING"
+    pop = key.split('.').pop()  # if "MotionTypes.WALKING", then just take "WALKING"
     return BASE_MODES.get(pop, BASE_MODES["UNKNOWN"])
 
 
@@ -241,7 +244,7 @@ def get_rich_mode(label_option):
             rich_mode[prop] = emcdb.get_base_mode_by_key(label_option[f"{prop}_equivalent"])[prop]
         else:
             # backwards compat for camelCase; eventually want to standardize to snake_case
-            for bm in ['base_mode', 'baseMode']: 
+            for bm in ['base_mode', 'baseMode']:
                 if bm in label_option:
                     rich_mode[prop] = get_base_mode_by_key(label_option[bm])[prop]
     Logger.log_debug(f"Rich mode: {rich_mode}")

@@ -9,8 +9,11 @@ def get_ble_sensed_vehicle_for_section(ble_entries, start_ts, end_ts, app_config
     Logger.log_debug('getting BLE sensed vehicle for section from %d to %d' % (start_ts, end_ts))
     if 'vehicle_identities' not in app_config:
         return None
-    ble_ranging_entries_during_section = get_ble_range_updates_for_section(ble_entries, start_ts, end_ts)
-    Logger.log_debug('After filtering, %d BLE ranging entries during the section' % len(ble_ranging_entries_during_section))
+    ble_ranging_entries_during_section = get_ble_range_updates_for_section(
+        ble_entries, start_ts, end_ts
+    )
+    Logger.log_debug('After filtering, %d BLE ranging entries during the section' %
+                     len(ble_ranging_entries_during_section))
     if len(ble_ranging_entries_during_section) == 0:
         return None
 
@@ -73,6 +76,7 @@ def get_vehicle_with_ble_beacon(major_minor, app_config):
             return vehicle
     Logger.log_debug('no vehicle found for BLE beacon %s' % major_minor)
     return None
+
 
 def primary_ble_sensed_mode_for_trip(trip) -> str:
     """

@@ -1,6 +1,7 @@
-from __future__ import annotations # __: skip
+from __future__ import annotations  # __: skip
 import emcommon.logger as Logger
-import re # __: skip
+import re  # __: skip
+
 
 def point_is_within_bounds(pt: list, bounds: list[list]) -> bool:
     """
@@ -16,9 +17,11 @@ def point_is_within_bounds(pt: list, bounds: list[list]) -> bool:
     lat_in_range = pt[1] < bounds[0][1] and pt[1] > bounds[1][1]
     return lat_in_range and lon_in_range
 
+
 conditional_survey_fns = {
-   'pointIsWithinBounds': point_is_within_bounds,
+    'pointIsWithinBounds': point_is_within_bounds,
 }
+
 
 def scoped_eval(script: str, scope: dict) -> any:
     """
@@ -31,9 +34,9 @@ def scoped_eval(script: str, scope: dict) -> any:
         return Function(...Object.keys(scope), `return ${script}`)(...Object.values(scope));
     """)
     ?'''
-   
+
     # Python implementation
-    return eval(script, scope) # __: skip
+    return eval(script, scope)  # __: skip
 
 
 def get_shows_if_condition(survey: dict) -> str:
@@ -44,7 +47,7 @@ def get_shows_if_condition(survey: dict) -> str:
     '''?
     return survey['showsIf'];
     ?'''
-  
+
     # Python implementation
     # __pragma__('skip')
     if 'showsIfPy' in survey:

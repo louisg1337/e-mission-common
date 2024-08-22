@@ -1,4 +1,4 @@
-from __future__ import annotations # __: skip
+from __future__ import annotations  # __: skip
 import emcommon.logger as Logger
 from emcommon.diary.base_modes import BASE_MODES
 
@@ -17,7 +17,8 @@ def get_mets_mode_map(label_options):
         elif 'met_equivalent' in opt:
             curr_met = BASE_MODES[opt['met_equivalent']]['met']
         else:
-            Logger.log_warn(f'Did not find either met_equivalent or met for {opt["value"]} ignoring entry')
+            Logger.log_warn(
+                f'Did not find either met_equivalent or met for {opt["value"]} ignoring entry')
             continue
         for range_name in curr_met:
             # For custom METs, ranges can be specified. Sometimes we want open-ended ranges,

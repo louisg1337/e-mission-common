@@ -1,19 +1,19 @@
-from __future__ import annotations # __: skip
+from __future__ import annotations  # __: skip
 
-# __pragma__('kwargs')
 
 def memoize(fn: function) -> function:
     '''
     Simple memoization decorator
     '''
     _cache = {}
+
+    # __pragma__('kwargs')
     def wrapper(*args, **kwargs):
         if (str(args), str(kwargs)) not in _cache:
             _cache[(str(args), str(kwargs))] = fn(*args, **kwargs)
         return _cache[(str(args), str(kwargs))]
+    # __pragma__('nokwargs')
     return wrapper
-
-# __pragma__('nokwargs')
 
 
 # e-mission-phone www/js/diary/timelineHelper.ts unpackServerData()

@@ -11,7 +11,7 @@ KWH_PER_GAL_BIODIESEL = KWH_PER_GAL_GASOLINE * 1.05
 KWH_PER_GAL_LPG = KWH_PER_GAL_GASOLINE * .74
 KWH_PER_GAL_CNG = KWH_PER_GAL_GASOLINE * .26
 KWH_PER_KG_HYDROGEN = KWH_PER_GAL_GASOLINE * 1.00
-KWH_PER_GAL_OTHER = KWH_PER_GAL_GASOLINE * 1.00 # TODO find a better default value
+KWH_PER_GAL_OTHER = KWH_PER_GAL_GASOLINE * 1.00  # TODO find a better default value
 
 FUELS_KG_CO2_PER_KWH = {
     # 8.89 kg CO2 / gal (EPA)
@@ -21,23 +21,23 @@ FUELS_KG_CO2_PER_KWH = {
     # 0.25 kg CO2 / kWh (https://www.eia.gov/environment/emissions/co2_vol_mass.php)
     'jet_fuel': 0.25,
 
-    'cng': 0.25, # TODO !!
-    'lpg': 0.25, # TODO !!
+    'cng': 0.25,  # TODO !!
+    'lpg': 0.25,  # TODO !!
 }
 
 MI_PER_KM = 0.621371
 
 
 def mpge_to_wh_per_km(mpge: float) -> float:
-  """
-  Convert miles per gallon of gasoline equivalent (MPGe) to watt-hours per kilometer.
-  e.g. mpge_to_wh_per_km(100) -> 209.40202700000003
-  """
-  return MI_PER_KM / mpge * KWH_PER_GAL_GASOLINE * 1000
+    """
+    Convert miles per gallon of gasoline equivalent (MPGe) to watt-hours per kilometer.
+    e.g. mpge_to_wh_per_km(100) -> 209.40202700000003
+    """
+    return MI_PER_KM / mpge * KWH_PER_GAL_GASOLINE * 1000
 
 
 def year_of_trip(trip) -> int:
-  return int(trip['start_fmt_time'].split('-')[0])
+    return int(trip['start_fmt_time'].split('-')[0])
 
 
 # raytracing algorithm
@@ -98,21 +98,24 @@ async def get_uace_by_coords(coords: list[float, float], year: int) -> str | Non
     """
 
     census_year = year - (year % 10)  # round down to the nearest decade
-    url = f"https://geocoding.geo.census.gov/geocoder/geographies/coordinates?x={coords[0]}&y={coords[1]}&benchmark=Public_AR_Current&vintage=Census{census_year}_Current&layers=87&format=json"
+    url = "https://geocoding.geo.census.gov/geocoder/geographies/coordinates?" + \
+        f"x={coords[0]}&y={coords[1]}" + \
+        f"&benchmark=Public_AR_Current&vintage=Census{census_year}_Current&layers=87&format=json"
 
     try:
         data = await fetch_url(url)
     except:
         Logger.log_error(f"Failed to geocode {coords} in year {year}")
         return None
-    
+
     # __pragma__('jsiter')
     for g in data['result']['geographies']:
         # __pragma__('nojsiter')
         for entry in data['result']['geographies'][g]:
             if 'UA' in entry:
                 return entry['UA']
-    Logger.log_error(f"Geocoding response did not contain UA for coords {coords} in year {year}: {data}")
+    Logger.log_error(
+        f"Geocoding response did not contain UA for coords {coords} in year {year}: {data}")
     return None
 
 
