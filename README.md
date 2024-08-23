@@ -9,9 +9,11 @@ This repository uses the [Transcrypt](https://www.transcrypt.org/) library to co
 ## Setup
 
 ```
-pip install transcrypt
-npm i
+. bin/setup.sh
 ```
+
+This will set up a `venv`, and install dependencies from both `pip` and `npm`.
+Re-run this if you change the dependencies in `requirements.txt` or `package.json`.
 
 ## To contribute
 
@@ -73,6 +75,8 @@ For Python:
 
 1. Make your local changes in the 'src' directory.
 1. From your other repo, run `pip install -e <path_to_this_repo>` to use the local version of e-mission-common.
+
+Alternatively, you can use `pip install git+https://github.com/JGreenlee/e-mission-common@master` to test the master branch or any other branch or tag.
 
 For JavaScript:
 
