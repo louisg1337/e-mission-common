@@ -1,5 +1,5 @@
 from __future__ import annotations  # __: skip
-import emcommon.logger as Logger
+import emcommon.logger as Log
 import re  # __: skip
 
 
@@ -70,7 +70,7 @@ def survey_prompted_for_trip(composite_trip: dict, app_config: dict) -> str | No
     try:
         potential_surveys = app_config['survey_info']['buttons']['trip-label']
     except:
-        Logger.log_warn('No surveys in app config')
+        Log.warn('No surveys in app config')
         return None
     # if potential surveys is not a list, just return it
     if not isinstance(potential_surveys, list):
@@ -93,9 +93,9 @@ def survey_prompted_for_trip(composite_trip: dict, app_config: dict) -> str | No
                 return survey['surveyName']
         # handles Python exception
         except Exception as e:
-            Logger.log_error(f"Error evaluating showsIf for survey {survey}: {e}")
+            Log.error(f"Error evaluating showsIf for survey {survey}: {e}")
         # handles JS exception
         except:
-            Logger.log_error(f"Error evaluating showsIf for survey {survey}: {__except0__}")
+            Log.error(f"Error evaluating showsIf for survey {survey}: {__except0__}")
     # no survey passed its condition; return None
     return None

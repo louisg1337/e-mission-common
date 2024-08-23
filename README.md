@@ -27,32 +27,32 @@ Re-run this if you change the dependencies in `requirements.txt` or `package.jso
 1. When you need to run a snippet in Python but not in JavaScript, you can use the `skip` pragma to skip one line or multiple lines.
    
     ```python
-    Logger.log_info("This line executes in both Python and JavaScript")
+    Log.info("This line executes in both Python and JavaScript")
     
-    Logger.log_info("But this line only executes in in Python") # __: skip
+    Log.info("But this line only executes in in Python") # __: skip
     
     # __pragma__('skip')
-    Logger.log_info("This whole block of lines only executes in Python")
-    Logger.log_info("JS ignores anything between the skip and noskip pragma comments")
+    Log.info("This whole block of lines only executes in Python")
+    Log.info("JS ignores anything between the skip and noskip pragma comments")
     # __pragma__('noskip')
     
-    Logger.log_info("This line is back to executing in both Python and JavaScript")
+    Log.info("This line is back to executing in both Python and JavaScript")
     ```
 1. When you need to run something in JavaScript but not in Python, you can use an **"executable comment"**, which starts with `'''?` and ends with `?'''`.
    
     ```python
-    Logger.log_info("This line executes in both Python and JavaScript")
+    Log.info("This line executes in both Python and JavaScript")
     
     '''?
-    Logger.log_info("This only executes in JavaScript")
-    Logger.log_info("The Transcrypt compiler will convert this to JavaScript code")
-    Logger.log_info("But regular Python will just see it as a comment and ignore it")
+    Log.info("This only executes in JavaScript")
+    Log.info("The Transcrypt compiler will convert this to JavaScript code")
+    Log.info("But regular Python will just see it as a comment and ignore it")
     ?'''
     ```
 1. If you need to insert raw JavaScript code, you can use the `js` pragma.
    
     ```python
-    Logger.log_info("This is Python code that executes in both Python and JavaScript")
+    Log.info("This is Python code that executes in both Python and JavaScript")
     # __pragma__('js', '{}', 'alert("This is raw JavaScript code that executes in JavaScript")')
     ```
     If you need multiple lines of raw JavaScript, you can wrap the `js` pragma in an **"executable comment"**.

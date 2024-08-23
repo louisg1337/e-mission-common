@@ -3,7 +3,7 @@ Functions for calculating the estimated footprint of a trip, both in terms of
 energy usage (kwh) and carbon emissions (kg_co2).
 """
 
-import emcommon.logger as Logger
+import emcommon.logger as Log
 import emcommon.diary.base_modes as emcdb
 import emcommon.metrics.footprint.egrid as emcmfe
 import emcommon.metrics.footprint.transit as emcmft
@@ -34,8 +34,8 @@ async def calc_footprint_for_trip(trip, mode_label_option):
     """
     Calculate the estimated footprint of a trip, which includes 'kwh' and 'kg_co2' fields.
     """
-    Logger.log_debug('Getting footprint for trip: ' + str(trip) +
-                     ', with mode option: ' + str(mode_label_option))
+    Log.debug('Getting footprint for trip: ' + str(trip) +
+              ', with mode option: ' + str(mode_label_option))
     metadata = {}
     distance = trip['distance']
     rich_mode = emcdb.get_rich_mode(mode_label_option)
@@ -53,15 +53,15 @@ async def calc_footprint_for_trip(trip, mode_label_option):
         # distance in m converted to km; km * Wh/km results in Wh; convert to kWh
         kwh = (distance / 1000) * fuel_type_footprint['wh_per_km'] / 1000
         if fuel_type in emcmfu.FUELS_KG_CO2_PER_KWH:
-            Logger.log_debug('Using default carbon intensity for fuel type: ' + fuel_type)
+            Log.debug('Using default carbon intensity for fuel type: ' + fuel_type)
             kg_co2 = kwh * emcmfu.FUELS_KG_CO2_PER_KWH[fuel_type]
         elif fuel_type == 'electric':
-            Logger.log_debug('Using eGRID carbon intensity for electric')
+            Log.debug('Using eGRID carbon intensity for electric')
             (kg_per_kwh, egrid_metadata) = await emcmfe.get_egrid_intensity_for_trip(trip)
             merge_metadatas(metadata, egrid_metadata)
             kg_co2 = kwh * kg_per_kwh
         else:
-            Logger.log_warn('Unknown fuel type: ' + fuel_type)
+            Log.warn('Unknown fuel type: ' + fuel_type)
             continue
         kwh_total += kwh
         kg_co2_total += kg_co2

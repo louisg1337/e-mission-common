@@ -1,9 +1,9 @@
-// Transcrypt'ed from Python, 2024-08-22 14:50:47
+// Transcrypt'ed from Python, 2024-08-23 15:32:01
 import {AssertionError, AttributeError, BaseException, DeprecationWarning, Exception, IndexError, IterableError, KeyError, NotImplementedError, RuntimeWarning, StopIteration, UserWarning, ValueError, Warning, __JsIterator__, __PyIterator__, __Terminal__, __add__, __and__, __call__, __class__, __envir__, __eq__, __floordiv__, __ge__, __get__, __getcm__, __getitem__, __getslice__, __getsm__, __gt__, __i__, __iadd__, __iand__, __idiv__, __ijsmod__, __ilshift__, __imatmul__, __imod__, __imul__, __in__, __init__, __ior__, __ipow__, __irshift__, __isub__, __ixor__, __jsUsePyNext__, __jsmod__, __k__, __kwargtrans__, __le__, __lshift__, __lt__, __matmul__, __mergefields__, __mergekwargtrans__, __mod__, __mul__, __ne__, __neg__, __nest__, __or__, __pow__, __pragma__, __pyUseJsNext__, __rshift__, __setitem__, __setproperty__, __setslice__, __sort__, __specialattrib__, __sub__, __super__, __t__, __terminal__, __truediv__, __withblock__, __xor__, _copy, _sort, abs, all, any, assert, bin, bool, bytearray, bytes, callable, chr, delattr, dict, dir, divmod, enumerate, filter, float, getattr, hasattr, hex, input, int, isinstance, issubclass, len, list, map, max, min, object, oct, ord, pow, print, property, py_TypeError, py_iter, py_metatype, py_next, py_reversed, py_typeof, range, repr, round, set, setattr, sorted, str, sum, tuple, zip} from './org.transcrypt.__runtime__.js';
 import * as emcdb from './emcommon.diary.base_modes.js';
 import {mpge_to_wh_per_km} from './emcommon.metrics.footprint.util.js';
-import * as Logger from './emcommon.logger.js';
-export {Logger, emcdb, mpge_to_wh_per_km};
+import * as Log from './emcommon.logger.js';
+export {Log, mpge_to_wh_per_km, emcdb};
 var __name__ = 'emcommon.diary.base_modes';
 export var mode_colors = dict ({'pink': '#c32e85', 'red': '#c21725', 'orange': '#bf5900', 'green': '#008148', 'blue': '#0074b7', 'periwinkle': '#6356bf', 'magenta': '#9240a4', 'grey': '#555555', 'taupe': '#7d585a'});
 export var NON_ACTIVE_METS = dict ({'ALL': dict ({'range': [0, float ('inf')]})});
@@ -35,7 +35,7 @@ export var get_base_mode_by_key = function (motionName) {
 	return BASE_MODES.py_get (py_pop, BASE_MODES ['UNKNOWN']);
 };
 export var get_rich_mode = function (label_option) {
-	Logger.log_debug ('Getting rich mode for label_option: {}'.format (label_option));
+	Log.debug ('Getting rich mode for label_option: {}'.format (label_option));
 	var rich_mode = dict ({});
 	var base_props = ['icon', 'color', 'met', 'footprint'];
 	for (var prop of base_props) {
@@ -53,7 +53,7 @@ export var get_rich_mode = function (label_option) {
 			}
 		}
 	}
-	Logger.log_debug ('Rich mode: {}'.format (rich_mode));
+	Log.debug ('Rich mode: {}'.format (rich_mode));
 	return rich_mode;
 };
 

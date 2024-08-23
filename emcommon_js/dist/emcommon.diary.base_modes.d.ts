@@ -24,9 +24,9 @@ export const TAXI_FOOTPRINT: {};
 export const BASE_MODES: {};
 export function get_base_mode_by_key(motionName: any): any;
 export function get_rich_mode(label_option: any): {};
-import * as Logger from './emcommon.logger.js';
-import * as emcdb from './emcommon.diary.base_modes.js';
+import * as Log from './emcommon.logger.js';
 import { mpge_to_wh_per_km } from './emcommon.metrics.footprint.util.js';
+import * as emcdb from './emcommon.diary.base_modes.js';
 declare namespace ___Users_jgreenle_openpath_e_mission_common_emcommon_js_emcommon_diary_base_modes_ { }
-export { Logger, emcdb, mpge_to_wh_per_km };
+export { Log, mpge_to_wh_per_km, emcdb };
 //# sourceMappingURL=emcommon.diary.base_modes.d.ts.map

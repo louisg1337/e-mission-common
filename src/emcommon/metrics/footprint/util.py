@@ -1,4 +1,4 @@
-import emcommon.logger as Logger
+import emcommon.logger as Log
 from emcommon.util import read_json_resource, fetch_url
 
 # https://www.epa.gov/energy/greenhouse-gases-equivalencies-calculator-calculations-and-references
@@ -75,15 +75,15 @@ async def get_egrid_region(coords: list[float, float], year: int) -> str | None:
     Get the eGRID region at the given coordinates in the year.
     """
     if year < 2018:
-        Logger.log_warn(f"eGRID data not available for {year}. Using 2018.")
+        Log.warn(f"eGRID data not available for {year}. Using 2018.")
         return await get_egrid_region(coords, 2018)
     try:
         geojson = await read_json_resource(f"egrid{year}_subregions_5pct.json")
     except:
         if year > 2018:
-            Logger.log_warn(f"eGRID data not available for {year}. Trying {year-1}.")
+            Log.warn(f"eGRID data not available for {year}. Trying {year-1}.")
             return await get_egrid_region(coords, year-1)
-        Logger.log_error(f"eGRID lookup failed for {year}.")
+        Log.error(f"eGRID lookup failed for {year}.")
         return None
     region_feature = get_feature_containing_point(coords, geojson)
     if region_feature is not None:
@@ -105,7 +105,7 @@ async def get_uace_by_coords(coords: list[float, float], year: int) -> str | Non
     try:
         data = await fetch_url(url)
     except:
-        Logger.log_error(f"Failed to geocode {coords} in year {year}")
+        Log.error(f"Failed to geocode {coords} in year {year}")
         return None
 
     # __pragma__('jsiter')
@@ -114,7 +114,7 @@ async def get_uace_by_coords(coords: list[float, float], year: int) -> str | Non
         for entry in data['result']['geographies'][g]:
             if 'UA' in entry:
                 return entry['UA']
-    Logger.log_error(
+    Log.error(
         f"Geocoding response did not contain UA for coords {coords} in year {year}: {data}")
     return None
 
@@ -124,13 +124,13 @@ async def get_intensities_data(year: int, dataset: str) -> dict:
     Get the 'intensities' data for the given year from the specified dataset.
     """
     if year < 2018:
-        Logger.log_warn(f"{dataset} data not available for {year}. Using 2018.")
+        Log.warn(f"{dataset} data not available for {year}. Using 2018.")
         return await get_intensities_data(2018, dataset)
     try:
         return await read_json_resource(f"{dataset}{year}_intensities.json")
     except:
         if year > 2018:
-            Logger.log_warn(f"{dataset} data not available for {year}. Trying {year-1}.")
+            Log.warn(f"{dataset} data not available for {year}. Trying {year-1}.")
             return await get_intensities_data(year-1, dataset)
-        Logger.log_error(f"eGRID lookup failed for {year}.")
+        Log.error(f"eGRID lookup failed for {year}.")
         return None

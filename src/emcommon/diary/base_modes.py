@@ -1,4 +1,4 @@
-import emcommon.logger as Logger
+import emcommon.logger as Log
 from emcommon.metrics.footprint.util import mpge_to_wh_per_km
 
 mode_colors = {
@@ -233,7 +233,7 @@ def get_rich_mode(label_option):
     e.g. get_rich_mode({ "base_mode": "WALKING", "color": "#000000" })
     -> { "icon": "walk", "color": "#000000", "met": WALKING_METS, "footprint": {} }
     """
-    Logger.log_debug(f"Getting rich mode for label_option: {label_option}")
+    Log.debug(f"Getting rich mode for label_option: {label_option}")
     rich_mode = {}
     base_props = ['icon', 'color', 'met', 'footprint']
     for prop in base_props:
@@ -247,5 +247,5 @@ def get_rich_mode(label_option):
             for bm in ['base_mode', 'baseMode']:
                 if bm in label_option:
                     rich_mode[prop] = get_base_mode_by_key(label_option[bm])[prop]
-    Logger.log_debug(f"Rich mode: {rich_mode}")
+    Log.debug(f"Rich mode: {rich_mode}")
     return rich_mode

@@ -17,7 +17,7 @@ import logging  # __: skip
 logging.basicConfig(level=logging.DEBUG)  # __: skip
 
 
-def log_debug(*args):
+def debug(*args):
     # only executed in JS environment
     '''?
     if window["Logger"]:
@@ -30,7 +30,7 @@ def log_debug(*args):
     logging.debug(*args)  # __: skip
 
 
-def log_info(*args):
+def info(*args):
     # only executed in JS environment
     '''?
     if window["Logger"]:
@@ -43,7 +43,7 @@ def log_info(*args):
     logging.info(*args)  # __: skip
 
 
-def log_warn(*args):
+def warn(*args):
     # only executed in JS environment
     '''?
     if window["Logger"]:
@@ -56,7 +56,7 @@ def log_warn(*args):
     logging.warning(*args)  # __: skip
 
 
-def log_error(*args):
+def error(*args):
     # only executed in JS environment
     '''?
     if window["Logger"]:

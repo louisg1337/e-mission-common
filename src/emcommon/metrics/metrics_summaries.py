@@ -1,6 +1,6 @@
 from __future__ import annotations  # __: skip
 # from util import memoize
-import emcommon.logger as Logger
+import emcommon.logger as Log
 import emcommon.util as util
 import emcommon.bluetooth.ble_matching as emcble
 import emcommon.survey.conditional_surveys as emcsc

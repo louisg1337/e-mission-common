@@ -1,8 +1,8 @@
-// Transcrypt'ed from Python, 2024-08-22 15:29:08
+// Transcrypt'ed from Python, 2024-08-23 15:32:01
 import {AssertionError, AttributeError, BaseException, DeprecationWarning, Exception, IndexError, IterableError, KeyError, NotImplementedError, RuntimeWarning, StopIteration, UserWarning, ValueError, Warning, __JsIterator__, __PyIterator__, __Terminal__, __add__, __and__, __call__, __class__, __envir__, __eq__, __floordiv__, __ge__, __get__, __getcm__, __getitem__, __getslice__, __getsm__, __gt__, __i__, __iadd__, __iand__, __idiv__, __ijsmod__, __ilshift__, __imatmul__, __imod__, __imul__, __in__, __init__, __ior__, __ipow__, __irshift__, __isub__, __ixor__, __jsUsePyNext__, __jsmod__, __k__, __kwargtrans__, __le__, __lshift__, __lt__, __matmul__, __mergefields__, __mergekwargtrans__, __mod__, __mul__, __ne__, __neg__, __nest__, __or__, __pow__, __pragma__, __pyUseJsNext__, __rshift__, __setitem__, __setproperty__, __setslice__, __sort__, __specialattrib__, __sub__, __super__, __t__, __terminal__, __truediv__, __withblock__, __xor__, _copy, _sort, abs, all, any, assert, bin, bool, bytearray, bytes, callable, chr, delattr, dict, dir, divmod, enumerate, filter, float, getattr, hasattr, hex, input, int, isinstance, issubclass, len, list, map, max, min, object, oct, ord, pow, print, property, py_TypeError, py_iter, py_metatype, py_next, py_reversed, py_typeof, range, repr, round, set, setattr, sorted, str, sum, tuple, zip} from './org.transcrypt.__runtime__.js';
 import {fetch_url, read_json_resource} from './emcommon.util.js';
-import * as Logger from './emcommon.logger.js';
-export {fetch_url, read_json_resource, Logger};
+import * as Log from './emcommon.logger.js';
+export {Log, read_json_resource, fetch_url};
 var __name__ = 'emcommon.metrics.footprint.util';
 export var KWH_PER_GAL_GASOLINE = 33.7;
 export var DIESEL_GGE = 0.88;
@@ -59,7 +59,7 @@ export var get_feature_containing_point = function (pt, geojson) {
 };
 export var get_egrid_region = async function (coords, year) {
 	if (year < 2018) {
-		Logger.log_warn ('eGRID data not available for {}. Using 2018.'.format (year));
+		Log.warn ('eGRID data not available for {}. Using 2018.'.format (year));
 		return await get_egrid_region (coords, 2018);
 	}
 	try {
@@ -67,10 +67,10 @@ export var get_egrid_region = async function (coords, year) {
 	}
 	catch (__except0__) {
 		if (year > 2018) {
-			Logger.log_warn ('eGRID data not available for {}. Trying {}.'.format (year, year - 1));
+			Log.warn ('eGRID data not available for {}. Trying {}.'.format (year, year - 1));
 			return await get_egrid_region (coords, year - 1);
 		}
-		Logger.log_error ('eGRID lookup failed for {}.'.format (year));
+		Log.error ('eGRID lookup failed for {}.'.format (year));
 		return null;
 	}
 	var region_feature = get_feature_containing_point (coords, geojson);
@@ -86,7 +86,7 @@ export var get_uace_by_coords = async function (coords, year) {
 		var data = await fetch_url (url);
 	}
 	catch (__except0__) {
-		Logger.log_error ('Failed to geocode {} in year {}'.format (coords, year));
+		Log.error ('Failed to geocode {} in year {}'.format (coords, year));
 		return null;
 	}
 	for (var g in data ['result'] ['geographies']) {
@@ -96,12 +96,12 @@ export var get_uace_by_coords = async function (coords, year) {
 			}
 		}
 	}
-	Logger.log_error ('Geocoding response did not contain UA for coords {} in year {}: {}'.format (coords, year, data));
+	Log.error ('Geocoding response did not contain UA for coords {} in year {}: {}'.format (coords, year, data));
 	return null;
 };
 export var get_intensities_data = async function (year, dataset) {
 	if (year < 2018) {
-		Logger.log_warn ('{} data not available for {}. Using 2018.'.format (dataset, year));
+		Log.warn ('{} data not available for {}. Using 2018.'.format (dataset, year));
 		return await get_intensities_data (2018, dataset);
 	}
 	try {
@@ -109,10 +109,10 @@ export var get_intensities_data = async function (year, dataset) {
 	}
 	catch (__except0__) {
 		if (year > 2018) {
-			Logger.log_warn ('{} data not available for {}. Trying {}.'.format (dataset, year, year - 1));
+			Log.warn ('{} data not available for {}. Trying {}.'.format (dataset, year, year - 1));
 			return await get_intensities_data (year - 1, dataset);
 		}
-		Logger.log_error ('eGRID lookup failed for {}.'.format (year));
+		Log.error ('eGRID lookup failed for {}.'.format (year));
 		return null;
 	}
 };

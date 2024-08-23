@@ -3,7 +3,7 @@ Functions that utilize NTD data to estimate fuel efficiency of different public 
 modes in a given year and area code.
 """
 
-import emcommon.logger as Logger
+import emcommon.logger as Log
 import emcommon.metrics.footprint.util as util
 
 fuel_types = ['Gasoline', 'Diesel', 'LPG', 'CNG', 'Hydrogen', 'Electric', 'Other']
@@ -15,14 +15,14 @@ def weighted_mean(values, weights):
 
 
 async def get_transit_intensities_for_trip(trip, modes: list[str] | None):
-    Logger.log_debug(f"Getting mode footprint for transit modes {modes} in trip: {trip}")
+    Log.debug(f"Getting mode footprint for transit modes {modes} in trip: {trip}")
     year = util.year_of_trip(trip)
     coords = trip["start_loc"]["coordinates"]
     return await get_transit_intensities_for_coords(year, coords, modes)
 
 
 async def get_transit_intensities_for_coords(year: int, coords: list[float, float], modes: list[str] | None, metadata: dict = {}):
-    Logger.log_debug(
+    Log.debug(
         f"Getting mode footprint for transit modes {modes} in year {year} and coords {coords}")
     metadata.update({'requested_coords': coords})
     uace_code = await util.get_uace_by_coords(coords, year)
@@ -36,7 +36,7 @@ async def get_transit_intensities_for_uace(year: int, uace: str | None = None, m
     :param modes: The NTD modes to get the data for, e.g. ["MB","CB"] (https://www.transit.dot.gov/ntd/national-transit-database-ntd-glossary)
     :returns: A dictionary of energy intensities by fuel type, with weights, e.g. {"gasoline": { "wh_per_km": 1000, "weight": 0.5 }, "diesel": { "wh_per_km": 2000, "weight": 0.5 }, "overall": { "wh_per_km": 1500, "weight": 1.0 } }
     """
-    Logger.log_debug(
+    Log.debug(
         f"Getting mode footprint for transit modes {modes} in year {year} and UACE {uace}")
     intensities_data = await util.get_intensities_data(year, 'ntd')
     actual_year = intensities_data['metadata']['year']
@@ -75,19 +75,19 @@ async def get_transit_intensities_for_uace(year: int, uace: str | None = None, m
     # if total_upt < 10000:
 
     if not agency_mode_fueltypes:
-        Logger.log_info(f"Insufficient data for year {year} and UACE {uace} and modes {modes}")
+        Log.info(f"Insufficient data for year {year} and UACE {uace} and modes {modes}")
         if uace:
-            Logger.log_info("Retrying with UACE = None")
+            Log.info("Retrying with UACE = None")
             return await get_transit_intensities_for_uace(year, None, modes)
         if modes:
-            Logger.log_info("Retrying with modes = None")
+            Log.info("Retrying with modes = None")
             return await get_transit_intensities_for_uace(year, uace, None)
-        Logger.log_error("No data available for any UACE or modes")
+        Log.error("No data available for any UACE or modes")
         return (None, metadata)
 
     for entry in agency_mode_fueltypes:
         entry['weight'] = entry['upt'] / total_upt
-    Logger.log_debug(f"agency_mode_fueltypes = {agency_mode_fueltypes}"[:500])
+    Log.debug(f"agency_mode_fueltypes = {agency_mode_fueltypes}"[:500])
 
     intensities = {}
     for fuel_type in fuel_types:
@@ -97,7 +97,7 @@ async def get_transit_intensities_for_uace(year: int, uace: str | None = None, m
             continue
         wh_per_km_values = [entry['wh_per_km'] for entry in fuel_type_entries]
         weights = [entry['weight'] for entry in fuel_type_entries]
-        Logger.log_debug(
+        Log.debug(
             f"fuel_type = {fuel_type}; wh_per_km_values = {wh_per_km_values}; weights = {weights}"[:500])
         fuel_type = fuel_type.lower()
         intensities[fuel_type] = {
@@ -113,6 +113,6 @@ async def get_transit_intensities_for_uace(year: int, uace: str | None = None, m
         "weight": sum(weights)
     }
 
-    Logger.log_info(f"intensities = {intensities}")
-    Logger.log_info(f"metadata = {metadata}"[:500])
+    Log.info(f"intensities = {intensities}")
+    Log.info(f"metadata = {metadata}"[:500])
     return (intensities, metadata)

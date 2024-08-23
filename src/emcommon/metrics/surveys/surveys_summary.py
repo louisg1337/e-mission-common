@@ -1,5 +1,5 @@
 from __future__ import annotations  # __: skip
-import emcommon.logger as Logger
+import emcommon.logger as Log
 from emcommon.survey.conditional_surveys import survey_prompted_for_trip
 
 
@@ -24,7 +24,7 @@ from emcommon.survey.conditional_surveys import survey_prompted_for_trip
 #         if answered_survey == prompted_survey:
 #             surveys_summary[prompted_survey]['answered'] += 1
 #         elif answered_survey:
-#             Logger.log_warn(f"Unexpected: trip {trip['_id']['$oid']} answered survey {answered_survey} but should have been prompted for {prompted_survey}")
+#             Log.warn(f"Unexpected: trip {trip['_id']['$oid']} answered survey {answered_survey} but should have been prompted for {prompted_survey}")
 #             surveys_summary[prompted_survey]['mismatched'] += 1
 #         else:
 #             surveys_summary[prompted_survey]['unanswered'] += 1
