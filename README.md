@@ -23,7 +23,12 @@ Re-run this if you change the dependencies in `requirements.txt` or `package.jso
 
 ## Tips for writing code to work in both Python and JavaScript
 
-1. Use the `logger` module for all logs; it is set up to work in both languages.
+1. Use the `emcommon.logger` module for all logs; it is set up to work in both languages.
+
+    ```python
+    import emcommon.logger as Log
+    ```
+
 1. When you need to run a snippet in Python but not in JavaScript, you can use the `skip` pragma to skip one line or multiple lines.
    
     ```python
