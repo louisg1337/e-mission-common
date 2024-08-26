@@ -30,7 +30,7 @@ async def get_transit_intensities_for_coords(year: int, coords: list[float, floa
     return await get_transit_intensities_for_uace(year, uace_code, modes, metadata)
 
 
-async def get_transit_intensities_for_uace(year: int, uace = None, modes = None, metadata: dict = {}):
+async def get_transit_intensities_for_uace(year: int, uace = None, modes: list[str] | None = None, metadata: dict = {}):
     """
     Returns estimated energy intensities by fuel type across the given modes in the urban area of the given trip.
     :param trip: The trip to get the data for, e.g. {"year": "2022", "distance": 1000, "start_loc": {"coordinates": [-84.52, 39.13]}}
