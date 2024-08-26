@@ -71,7 +71,7 @@ def get_feature_containing_point(pt, geojson):
     return None
 
 
-async def get_egrid_region(coords: list[float, float], year: int) -> str | None:
+async def get_egrid_region(coords: list[float, float], year: int):
     """
     Get the eGRID region at the given coordinates in the year.
     """
@@ -93,7 +93,7 @@ async def get_egrid_region(coords: list[float, float], year: int) -> str | None:
     return None
 
 
-async def get_uace_by_coords(coords: list[float, float], year: int) -> str | None:
+async def get_uace_by_coords(coords: list[float, float], year: int):
     """
     Get the UACE code for the given coordinates in the given year.
     """
