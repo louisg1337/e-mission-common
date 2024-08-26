@@ -1,13 +1,27 @@
 #!/bin/bash
 
-echo "Creating virtual environment..."
-python3 -m venv .venv
+# copy the 'setup' directory from the e-mission-server repo
+git clone -n --depth=1 --filter=tree:0 https://github.com/e-mission/e-mission-server.git
+cd e-mission-server
+git sparse-checkout set --no-cone setup
+git checkout
+cp -r setup ../
+cd ..
+rm -rf e-mission-server
 
-echo "Activating virtual environment..."
-source .venv/bin/activate
+# determine platform 
+if [[ "$OSTYPE" == "linux-gnu"* ]]; then
+    TARGET_PLATFORM="linux"
+elif [[ "$OSTYPE" == "darwin"* ]]; then
+    TARGET_PLATFORM="mac"
+else
+    echo "Unsupported platform $OSTYPE"
+    exit 1
+fi
 
-echo "Installing pip dependencies from requirements.txt..."
-pip install -r requirements.txt
+# set up conda using the e-mission-server scripts
+. setup/setup_conda.sh $TARGET_PLATFORM
+. setup/activate_conda.sh
 
-echo "Installing npm dependencies from package.json..."
-npm i
+# create the emcommon environment
+conda env update -n emcommon -f bin/environment.yml

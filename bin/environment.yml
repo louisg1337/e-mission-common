@@ -1,0 +1,8 @@
+name: emcommon
+dependencies:
+- pip
+- python=3.9
+- pytest
+- requests
+- pip:
+  - Transcrypt==3.9.3

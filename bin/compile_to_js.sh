@@ -1,5 +1,7 @@
 #!/bin/bash
 
+. setup/activate_conda.sh && conda activate emcommon
+
 set -e
 
 # if '-f' (force compile), remove the old files before compiling
