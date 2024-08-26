@@ -3,6 +3,7 @@ Functions that utilize NTD data to estimate fuel efficiency of different public 
 modes in a given year and area code.
 """
 
+from __future__ import annotations  # __: skip
 import emcommon.logger as Log
 import emcommon.metrics.footprint.util as util
 

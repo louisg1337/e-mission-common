@@ -1,3 +1,4 @@
+from __future__ import annotations  # __: skip
 import emcommon.logger as Log
 from emcommon.util import read_json_resource, fetch_url
 
@@ -104,6 +105,9 @@ async def get_uace_by_coords(coords: list[float, float], year: int) -> str | Non
 
     try:
         data = await fetch_url(url)
+    except Exception as e:
+        Log.error(f"Failed to geocode {coords} in year {year}: {e}")
+        return None
     except:
         Log.error(f"Failed to geocode {coords} in year {year}")
         return None
