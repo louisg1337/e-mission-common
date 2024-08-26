@@ -1,5 +1,7 @@
 import emcommon.logger as Log
 from emcommon.metrics.footprint.util import mpge_to_wh_per_km
+import colorsys
+from collections import defaultdict
 
 mode_colors = {
     "pink": '#c32e85',  # oklch(56% 0.2 350)     # e-car
@@ -249,3 +251,39 @@ def get_rich_mode(label_option):
                     rich_mode[prop] = get_base_mode_by_key(label_option[bm])[prop]
     Log.debug(f"Rich mode: {rich_mode}")
     return rich_mode
+
+def lighten_color(hex_color, lightness):
+    # Cap lightness at 2 to avoid too light colors
+    lightness = min(2, lightness)
+    # Convert to RGB
+    r, g, b = int(hex_color[1:3], 16), int(hex_color[3:5], 16), int(hex_color[5:7], 16)
+    # Convert RGB to HLS 
+    h, l, s = colorsys.rgb_to_hls(r/255, g/255, b/255)
+    # Modify lightness
+    l *= lightness
+    # Convert back to RGB
+    r, g, b = colorsys.hls_to_rgb(h, l, s)
+    # Convert to hex
+    return "#{:02x}{:02x}{:02x}".format(int(r*255), int(g*255), int(b*255))
+
+# [ ["CAR", "RED"], ["BIKE", "BLUE"] ]
+def dedupe_colors(colors):
+    colors_deduped = {}
+    # Count number of occurrences of each color
+    color_counts = defaultdict(int)
+    color_current = defaultdict(float)
+    for _, color in colors:
+        color_counts[color] += 1
+    # Adjust each color to be unique
+    for mode, color in colors:
+        # Find current adjustment for this color
+        current_adjustment = color_current[color]
+        # Lighten the color based off adjustment
+        new_color = lighten_color(color, 1 + current_adjustment)
+        # Store new color
+        colors_deduped[mode] = new_color
+        # Calculate next adjustment for next occurrence
+        adjustment = 1 / color_counts[color]
+        color_current[color] += adjustment
+    return colors_deduped
+
