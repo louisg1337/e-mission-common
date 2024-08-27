@@ -1,7 +1,7 @@
 import emcommon.logger as Log
 from emcommon.metrics.footprint.util import mpge_to_wh_per_km
-import colorsys
-from collections import defaultdict
+# __pragma__('js', '{}', "import color from 'color'")
+import colorsys  # __: skip
 
 mode_colors = {
     "pink": '#c32e85',  # oklch(56% 0.2 350)     # e-car
@@ -252,38 +252,63 @@ def get_rich_mode(label_option):
     Log.debug(f"Rich mode: {rich_mode}")
     return rich_mode
 
-def lighten_color(hex_color, lightness):
-    # Cap lightness at 2 to avoid too light colors
-    lightness = min(2, lightness)
+
+def scale_lightness(hex_color: str, factor: float) -> str:
+    """
+    Adjust the lightness of a hex color by a factor
+
+    :param hex_color: a hex color string, e.g. "#ff0000"
+    :param factor: a scaling factor, e.g. 0.5 for half as light, 2 for twice as light
+    :return: a new hex color string
+    e.g. scale_lightness("#ff0000", 0.5) -> "#800000"
+    """
+    if not hex_color:
+        return hex_color
+
+    # JS implementation
+    '''?
+    color_obj = color(hex_color)
+    if factor < 1:
+        return color_obj.darken(1 - factor).hex()
+    else:
+        return color_obj.lighten(factor - 1).hex()
+    ?'''
+
+    # Python implementation
+    # __pragma__('skip')
     # Convert to RGB
     r, g, b = int(hex_color[1:3], 16), int(hex_color[3:5], 16), int(hex_color[5:7], 16)
-    # Convert RGB to HLS 
+    # Convert RGB to HLS
     h, l, s = colorsys.rgb_to_hls(r/255, g/255, b/255)
     # Modify lightness
-    l *= lightness
+    l *= factor
     # Convert back to RGB
     r, g, b = colorsys.hls_to_rgb(h, l, s)
     # Convert to hex
-    return "#{:02x}{:02x}{:02x}".format(int(r*255), int(g*255), int(b*255))
+    return "#{:02x}{:02x}{:02x}".format(round(r*255), round(g*255), round(b*255))
+    # __pragma__('noskip')
 
-# [ ["CAR", "RED"], ["BIKE", "BLUE"] ]
-def dedupe_colors(colors):
+
+def dedupe_colors(colors: list[list[str]]) -> dict:
+    """
+    Given a list of key-color pairs, dedupe the colors by creating lighter/darker variations
+
+    :param colors: a list of key-color pairs, e.g. [['a', '#ff0000'], ['b', '#ff0000'], ['c', '#ff0000']]
+    :return: a dict of deduped key-color pairs, e.g. {'a': '#660000', 'b': '#ff0000', 'c': '#ff9999'}
+    """
     colors_deduped = {}
-    # Count number of occurrences of each color
-    color_counts = defaultdict(int)
-    color_current = defaultdict(float)
-    for _, color in colors:
-        color_counts[color] += 1
-    # Adjust each color to be unique
-    for mode, color in colors:
-        # Find current adjustment for this color
-        current_adjustment = color_current[color]
-        # Lighten the color based off adjustment
-        new_color = lighten_color(color, 1 + current_adjustment)
-        # Store new color
-        colors_deduped[mode] = new_color
-        # Calculate next adjustment for next occurrence
-        adjustment = 1 / color_counts[color]
-        color_current[color] += adjustment
+    max_adjustment = 0.6  # more than this is too drastic and colors approach black/white
+    for key, color in colors:
+        if not color or key in colors_deduped:
+            continue
+        duplicates = [color_pair for color_pair in colors if color_pair[1] == color]
+        if len(duplicates) > 1:
+            # there are duplicates; calculate evenly-spaced factors
+            # ranging from [1-max_adjustment, 1+max_adjustment]
+            for i, (k, c) in enumerate(duplicates):
+                factor = (1 - max_adjustment) + ((max_adjustment * 2 / (len(duplicates) - 1)) * i)
+                colors_deduped[k] = scale_lightness(c, factor)
+        else:
+            # not a dupe; use the color as-is
+            colors_deduped[key] = color
     return colors_deduped
-
