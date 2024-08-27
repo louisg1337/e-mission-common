@@ -234,7 +234,7 @@ def get_rich_mode(label_option):
     -> { "icon": "walk", "color": "#000000", "met": WALKING_METS, "footprint": {} }
     """
     Log.debug(f"Getting rich mode for label_option: {label_option}")
-    rich_mode = {}
+    rich_mode = {k: v for k, v in dict(label_option).items()}
     base_props = ['icon', 'color', 'met', 'footprint']
     for prop in base_props:
         if prop in label_option:
