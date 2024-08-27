@@ -246,6 +246,8 @@ def get_rich_mode(label_option):
             # backwards compat for camelCase; eventually want to standardize to snake_case
             for bm in ['base_mode', 'baseMode']:
                 if bm in label_option:
-                    rich_mode[prop] = get_base_mode_by_key(label_option[bm])[prop]
+                    base_mode = get_base_mode_by_key(label_option[bm])
+                    if prop in base_mode:
+                        rich_mode[prop] = base_mode[prop]
     Log.debug(f"Rich mode: {rich_mode}")
     return rich_mode
