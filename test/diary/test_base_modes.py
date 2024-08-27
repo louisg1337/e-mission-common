@@ -1,7 +1,7 @@
 # __pragma__('jsiter')
 
 import emcommon.diary.base_modes as emcdb
-from ..__testing import jest_test, jest_describe, expectEqual
+from ..__testing import _expect as expect, jest_test, jest_describe, expectEqual
 
 
 @jest_test
@@ -66,6 +66,27 @@ def test_get_rich_mode_e_car():
                     'color': '#000000',
                     'footprint': {'gasoline': {'wh_per_km': 500, 'weight': 1}}
                 }))
+
+
+@jest_test
+def test_dedupe_colors():
+    fake_mode_colors = [
+        ['walk', '#0074b7'],
+        ['e-bike', '#008148'],
+        ['bike', '#008148'],
+        ['bikeshare', '#008148'],
+    ]
+    deduped_colors = emcdb.dedupe_colors(fake_mode_colors)
+    print(deduped_colors)
+
+    expected = {
+        'bike': '#008148',
+        'bikeshare': '#00ce73',
+        'e-bike': '#00341d',
+        'walk': '#0074b7',
+    }
+    for mode in expected:
+        expectEqual(deduped_colors[mode].upper(), expected[mode].upper())
 
 
 jest_describe('test_base_modes')
