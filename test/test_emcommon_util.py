@@ -18,4 +18,4 @@ async def test_fetch_url():
            'sunt aut facere repellat provident occaecati excepturi optio reprehenderit')
 
 
-jest_describe('test_example')
+jest_describe('test_emcommon_util')
