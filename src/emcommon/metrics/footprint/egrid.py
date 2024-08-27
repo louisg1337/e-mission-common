@@ -20,7 +20,7 @@ async def get_egrid_intensity_for_coords(year: int, coords: list[float, float] |
     return await get_egrid_intensity_for_region(year, region, metadata)
 
 
-async def get_egrid_intensity_for_region(year: int, region, metadata: dict = {}):
+async def get_egrid_intensity_for_region(year: int, region: str | None, metadata: dict = {}):
     """
     Returns the estimated carbon intensity of the electricity grid at the given region for the given year (units in kg CO2e per MWh).
     :param year: The year as int, e.g. 2022
