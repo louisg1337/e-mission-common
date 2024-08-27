@@ -104,7 +104,6 @@ describe('TestTransitCalculationsFakeData', () => {
     };
     fs.writeFileSync('./src/emcommon/resources/ntd9999_intensities.json', JSON.stringify(fake_data));
 
-    console.log({cwd: process.cwd()});
     const [intensities, metadata] = await emcft.get_transit_intensities_for_uace(9999, '99999', BUS_MODES);
 
     const expected_intensities = {
@@ -123,5 +122,9 @@ describe('TestTransitCalculationsFakeData', () => {
     };
     expect(intensities).toEqual(expected_intensities);
     expect(metadata).toEqual(expected_metadata);
+  });
+
+  afterEach(() => {
+    fs.unlinkSync('./src/emcommon/resources/ntd9999_intensities.json');
   });
 });
