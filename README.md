@@ -89,3 +89,26 @@ For JavaScript:
 1. Run `bash bin/compile_to_js.sh` to build the JavaScript.
 1. From this repo, run `npm link` to establish a symlink to your local version of e-mission-common.
 1. From the other repo, run `npm link e-mission-common` to use the symlinked version of this repo.
+
+## Unit testing
+
+Due to the nature of this library, it is critical to test both the Python source and the compiled JavaScript. Ideally, we can write a test suite in a `.py` file and have it run in both Python and JavaScript environments.
+
+This is possible, to a degree, using `transcrypt` to compile test files to JavaScript, and then running `jest` on the compiled JavaScript.
+> `pytest` was chosen over `unittest` because it is more flexible, allowing tests to be written in a way that can be compiled to Jest-compatible JavaScript. (It is also more concise and friendly to write.)
+
+See the `tests` directory for `.py` files that are not accompanied by a `.js` file. These files are intended to be run in both Python and JavaScript environments.
+
+### Dedicated JS test files
+
+There may be testing scenarios that must significantly diverge between Python and JavaScript versions. In these cases, we can write a separate `.js` file next to the `.py` file of the same name. In this case, no compilation is necessary; `pytest` will run the `.py` file and `jest` will run the `.js`.
+
+### Running the tests
+
+```bash
+. bin/run_pytest.sh
+```
+
+```bash
+. bin/run_jest.sh
+```

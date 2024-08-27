@@ -3,3 +3,4 @@ __pycache__/
 e_mission_common.egg-info/
 node_modules/
 setup/
+test_js*

@@ -5,12 +5,9 @@
   "description": "A common library to share code between projects in the e-mission-platform. Written in Python and exposed as both Python and JavaScript.",
   "main": "./emcommon_js/index.js",
   "types": "./emcommon_js/dist/index.d.ts",
-  "scripts": {
-    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js"
-  },
   "jest": {
     "testMatch": [
-      "**/test/**/*.js"
+      "**/test_*.js"
     ],
     "globals": { "window": {} },
     "transform": {}
