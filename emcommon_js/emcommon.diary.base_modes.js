@@ -1,10 +1,11 @@
-// Transcrypt'ed from Python, 2024-08-23 15:32:01
+// Transcrypt'ed from Python, 2024-08-27 12:55:27
 import {AssertionError, AttributeError, BaseException, DeprecationWarning, Exception, IndexError, IterableError, KeyError, NotImplementedError, RuntimeWarning, StopIteration, UserWarning, ValueError, Warning, __JsIterator__, __PyIterator__, __Terminal__, __add__, __and__, __call__, __class__, __envir__, __eq__, __floordiv__, __ge__, __get__, __getcm__, __getitem__, __getslice__, __getsm__, __gt__, __i__, __iadd__, __iand__, __idiv__, __ijsmod__, __ilshift__, __imatmul__, __imod__, __imul__, __in__, __init__, __ior__, __ipow__, __irshift__, __isub__, __ixor__, __jsUsePyNext__, __jsmod__, __k__, __kwargtrans__, __le__, __lshift__, __lt__, __matmul__, __mergefields__, __mergekwargtrans__, __mod__, __mul__, __ne__, __neg__, __nest__, __or__, __pow__, __pragma__, __pyUseJsNext__, __rshift__, __setitem__, __setproperty__, __setslice__, __sort__, __specialattrib__, __sub__, __super__, __t__, __terminal__, __truediv__, __withblock__, __xor__, _copy, _sort, abs, all, any, assert, bin, bool, bytearray, bytes, callable, chr, delattr, dict, dir, divmod, enumerate, filter, float, getattr, hasattr, hex, input, int, isinstance, issubclass, len, list, map, max, min, object, oct, ord, pow, print, property, py_TypeError, py_iter, py_metatype, py_next, py_reversed, py_typeof, range, repr, round, set, setattr, sorted, str, sum, tuple, zip} from './org.transcrypt.__runtime__.js';
 import * as emcdb from './emcommon.diary.base_modes.js';
 import {mpge_to_wh_per_km} from './emcommon.metrics.footprint.util.js';
 import * as Log from './emcommon.logger.js';
-export {Log, mpge_to_wh_per_km, emcdb};
+export {emcdb, Log, mpge_to_wh_per_km};
 var __name__ = 'emcommon.diary.base_modes';
+import color from 'color'
 export var mode_colors = dict ({'pink': '#c32e85', 'red': '#c21725', 'orange': '#bf5900', 'green': '#008148', 'blue': '#0074b7', 'periwinkle': '#6356bf', 'magenta': '#9240a4', 'grey': '#555555', 'taupe': '#7d585a'});
 export var NON_ACTIVE_METS = dict ({'ALL': dict ({'range': [0, float ('inf')]})});
 export var WALKING_METS = dict ({'VERY_SLOW': dict ({'range': [0, 2.0], 'mets': 2.0}), 'SLOW': dict ({'range': [2.0, 2.5], 'mets': 2.8}), 'MODERATE_0': dict ({'range': [2.5, 2.8], 'mets': 3.0}), 'MODERATE_1': dict ({'range': [2.8, 3.2], 'mets': 3.5}), 'FAST': dict ({'range': [3.2, 3.5], 'mets': 4.3}), 'VERY_FAST_0': dict ({'range': [3.5, 4.0], 'mets': 5.0}), 'VERY_FAST_1': dict ({'range': [4.0, 4.5], 'mets': 6.0}), 'VERY_VERY_FAST': dict ({'range': [4.5, 5], 'mets': 7.0}), 'SUPER_FAST': dict ({'range': [5, 6], 'mets': 8.3}), 'RUNNING': dict ({'range': [6, float ('inf')], 'mets': 9.8})});
@@ -36,7 +37,13 @@ export var get_base_mode_by_key = function (motionName) {
 };
 export var get_rich_mode = function (label_option) {
 	Log.debug ('Getting rich mode for label_option: {}'.format (label_option));
-	var rich_mode = dict ({});
+	var rich_mode = (function () {
+		var __accu0__ = [];
+		for (var [k, v] of dict (label_option).py_items ()) {
+			__accu0__.append ([k, v]);
+		}
+		return dict (__accu0__);
+	}) ();
 	var base_props = ['icon', 'color', 'met', 'footprint'];
 	for (var prop of base_props) {
 		if (__in__ (prop, label_option)) {
@@ -48,13 +55,56 @@ export var get_rich_mode = function (label_option) {
 		else {
 			for (var bm of ['base_mode', 'baseMode']) {
 				if (__in__ (bm, label_option)) {
-					rich_mode [prop] = get_base_mode_by_key (label_option [bm]) [prop];
+					var base_mode = get_base_mode_by_key (label_option [bm]);
+					if (__in__ (prop, base_mode)) {
+						rich_mode [prop] = base_mode [prop];
+					}
 				}
 			}
 		}
 	}
 	Log.debug ('Rich mode: {}'.format (rich_mode));
 	return rich_mode;
+};
+export var scale_lightness = function (hex_color, factor) {
+	if (!(hex_color)) {
+		return hex_color;
+	}
+	var color_obj = color (hex_color);
+	if (factor < 1) {
+		return color_obj.darken (1 - factor).hex ();
+	}
+	else {
+		return color_obj.lighten (factor - 1).hex ();
+	}
+};
+export var dedupe_colors = function (colors) {
+	var colors_deduped = dict ({});
+	var max_adjustment = 0.6;
+	for (var [key, color] of colors) {
+		if (!(color) || __in__ (key, colors_deduped)) {
+			continue;
+		}
+		var duplicates = (function () {
+			var __accu0__ = [];
+			for (var color_pair of colors) {
+				if (color_pair [1] == color) {
+					__accu0__.append (color_pair);
+				}
+			}
+			return __accu0__;
+		}) ();
+		if (len (duplicates) > 1) {
+			for (var [i, [k, c]] of enumerate (duplicates)) {
+				var factor = (1 - max_adjustment) + ((max_adjustment * 2) / (len (duplicates) - 1)) * i;
+				colors_deduped [k] = scale_lightness (c, factor);
+			}
+		}
+		else {
+			colors_deduped [key] = color;
+		}
+	}
+	return colors_deduped;
 };
 
 //# sourceMappingURL=emcommon.diary.base_modes.map
