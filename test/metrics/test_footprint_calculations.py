@@ -44,7 +44,7 @@ class TestFootprintCalculations(unittest.IsolatedAsyncioTestCase):
 
     async def test_nyc_bus_footprint(self):
         """
-        10 km in a NYC BUS should consume 16.90 kWh and emit 714.99 kg CO2e.
+        10 km in a NYC BUS should consume 6.47 kWh and emit 1.72 kg CO2e.
         """
         fake_trip = {
             'distance': 10000,
@@ -55,7 +55,7 @@ class TestFootprintCalculations(unittest.IsolatedAsyncioTestCase):
 
         (footprint, metadata) = await emcmff.calc_footprint_for_trip(fake_trip, fake_mode)
 
-        expected_footprint = {'kwh': 16.90, 'kg_co2': 714.99}
+        expected_footprint = {'kwh': 6.47, 'kg_co2': 1.72}
         expected_metadata = {
             "data_sources": ["ntd2022", "egrid2022"],
             "is_provisional": False,

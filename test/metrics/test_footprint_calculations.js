@@ -48,7 +48,7 @@ describe('TestFootprintCalculations', () => {
 
     const [footprint, metadata] = await emcmff.calc_footprint_for_trip(fake_trip, fake_mode);
 
-    const expected_footprint = {'kwh': 16.90, 'kg_co2': 714.99};
+    const expected_footprint = {'kwh': 6.47, 'kg_co2': 1.72};
     const expected_metadata = {
       "data_sources": ["ntd2022", "egrid2022"],
       "is_provisional": false,

@@ -50,21 +50,28 @@ async def calc_footprint_for_trip(trip, mode_label_option):
     for fuel_type in mode_footprint:
         # __pragma__('nojsiter')
         fuel_type_footprint = mode_footprint[fuel_type]
-        # distance in m converted to km; km * Wh/km results in Wh; convert to kWh
-        kwh = (distance / 1000) * fuel_type_footprint['wh_per_km'] / 1000
+        kwh = 0
+        if 'wh_per_km' in fuel_type_footprint:
+            # distance in m converted to km; km * Wh/km results in Wh; convert to kWh
+            kwh += (distance / 1000) * fuel_type_footprint['wh_per_km'] / 1000
+        if 'wh_per_trip' in fuel_type_footprint:
+            kwh += fuel_type_footprint['wh_per_trip'] / 1000
+
         if fuel_type in emcmfu.FUELS_KG_CO2_PER_KWH:
             Log.debug('Using default carbon intensity for fuel type: ' + fuel_type)
             kg_co2 = kwh * emcmfu.FUELS_KG_CO2_PER_KWH[fuel_type]
         elif fuel_type == 'electric':
             Log.debug('Using eGRID carbon intensity for electric')
-            (kg_per_kwh, egrid_metadata) = await emcmfe.get_egrid_intensity_for_trip(trip)
+            (kg_per_mwh, egrid_metadata) = await emcmfe.get_egrid_intensity_for_trip(trip)
             merge_metadatas(metadata, egrid_metadata)
-            kg_co2 = kwh * kg_per_kwh
+            kg_co2 = kwh * kg_per_mwh / 1000
         else:
             Log.warn('Unknown fuel type: ' + fuel_type)
             continue
-        kwh_total += kwh
-        kg_co2_total += kg_co2
+
+        weight = fuel_type_footprint['weight'] if 'weight' in fuel_type_footprint else 1
+        kwh_total += kwh * weight
+        kg_co2_total += kg_co2 * weight
 
     # Divide by number of passengers, if specified:
     # Some modes (air, transit modes) already account for this; the given footprints are per
