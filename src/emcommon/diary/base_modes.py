@@ -291,15 +291,17 @@ def scale_lightness(hex_color: str, factor: float) -> str:
     # __pragma__('noskip')
 
 
-def dedupe_colors(colors: list[list[str]]) -> dict:
+def dedupe_colors(colors: list[list[str]], min_adjustment=None, max_adjustment=0.6) -> dict:
     """
     Given a list of key-color pairs, dedupe the colors by creating lighter/darker variations
 
     :param colors: a list of key-color pairs, e.g. [['a', '#ff0000'], ['b', '#ff0000'], ['c', '#ff0000']]
     :return: a dict of deduped key-color pairs, e.g. {'a': '#660000', 'b': '#ff0000', 'c': '#ff9999'}
     """
+    if min_adjustment is None:
+        min_adjustment = max_adjustment
+
     colors_deduped = {}
-    max_adjustment = 0.6  # more than this is too drastic and colors approach black/white
     for key, color in colors:
         if not color or key in colors_deduped:
             continue
@@ -308,7 +310,7 @@ def dedupe_colors(colors: list[list[str]]) -> dict:
             # there are duplicates; calculate evenly-spaced factors
             # ranging from [1-max_adjustment, 1+max_adjustment]
             for i, (k, c) in enumerate(duplicates):
-                factor = (1 - max_adjustment) + ((max_adjustment * 2 / (len(duplicates) - 1)) * i)
+                factor = (min_adjustment) + ((max_adjustment * 2 / (len(duplicates) - 1)) * i)
                 colors_deduped[k] = scale_lightness(c, factor)
         else:
             # not a dupe; use the color as-is
